@@ -266,6 +266,7 @@
           <div class="result-box"><h3>البنية والحمولات</h3><pre id="simpleContainer"></pre></div>
           <div class="result-box"><h3>تحليل البتات</h3><pre id="simplePixels"></pre></div>
           <div class="result-box"><h3>نتائج التمشيط العميق</h3><pre id="simpleProbes"></pre></div>
+          <div class="result-box wide"><h3>تغطية التحليل المتقدم</h3><pre id="simpleAdvanced"></pre></div>
         </div>
       </section>
 
@@ -602,9 +603,11 @@ $('robustExtractButton').addEventListener('click',()=>{const output=$('robustExt
 /* محرك الفحص الجنائي المحلي: حاويات الملفات + metadata + مؤشرات LSB. */
 const KNOWN_PNG_CHUNKS = new Set(['IHDR','PLTE','IDAT','IEND','tEXt','zTXt','iTXt','eXIf','iCCP','sRGB','gAMA','cHRM','pHYs','tIME','tRNS','bKGD','hIST','sPLT','sBIT','acTL','fcTL','fdAT','cICP','mDCV']);
 const FILE_SIGNATURES = [
-  {name:'ZIP archive', bytes:[0x50,0x4b,0x03,0x04]}, {name:'GZIP stream',bytes:[0x1f,0x8b,0x08]},
-  {name:'RAR archive',bytes:[0x52,0x61,0x72,0x21,0x1a,0x07]}, {name:'7z archive',bytes:[0x37,0x7a,0xbc,0xaf,0x27,0x1c]},
+  {name:'ZIP archive', bytes:[0x50,0x4b,0x03,0x04]}, {name:'GZIP stream',bytes:[0x1f,0x8b,0x08]}, {name:'RAR archive',bytes:[0x52,0x61,0x72,0x21,0x1a,0x07]}, {name:'7z archive',bytes:[0x37,0x7a,0xbc,0xaf,0x27,0x1c]},
   {name:'PDF document',bytes:[0x25,0x50,0x44,0x46,0x2d]}, {name:'SQLite database',bytes:[0x53,0x51,0x4c,0x69,0x74,0x65,0x20,0x66,0x6f,0x72,0x6d,0x61,0x74,0x20,0x33,0x00]},
+  {name:'Windows executable candidate (MZ)',bytes:[0x4d,0x5a]}, {name:'ELF executable candidate',bytes:[0x7f,0x45,0x4c,0x46]}, {name:'Java class candidate',bytes:[0xca,0xfe,0xba,0xbe]}, {name:'WebAssembly candidate',bytes:[0x00,0x61,0x73,0x6d]}, {name:'Android DEX candidate',bytes:[0x64,0x65,0x78,0x0a]}, {name:'OLE document container',bytes:[0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1]},
+  {name:'MP3 audio candidate',bytes:[0x49,0x44,0x33]}, {name:'WAVE identifier',bytes:[0x57,0x41,0x56,0x45]},
+  {name:'C2PA/JUMBF marker',bytes:[0x6a,0x75,0x6d,0x62]}, {name:'C2PA claim marker',bytes:[0x63,0x32,0x70,0x61]},
   {name:'Sitr V2 marker',bytes:[0x53,0x49,0x54,0x52]}, {name:'Sitr V1 marker',bytes:[0x53,0x41,0x4e,0x41]}
 ];
 function scanAscii(bytes,start=0,length=bytes.length-start){let out='';const end=Math.min(bytes.length,start+length);for(let i=start;i<end;i++)out+=String.fromCharCode(bytes[i]);return out;}
@@ -631,6 +634,32 @@ async function scanInflate(bytes){
   if(typeof DecompressionStream==='undefined')return null;
   try{return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate'))).arrayBuffer());}catch{return null;}
 }
+function scanEntropy(bytes,limit=4*1024*1024){const counts=new Uint32Array(256),n=Math.min(bytes.length,limit);if(!n)return 0;for(let i=0;i<n;i++)counts[bytes[i]]++;let entropy=0;for(const count of counts)if(count){const p=count/n;entropy-=p*Math.log2(p);}return entropy;}
+function scanHasMarker(bytes,text){const marker=[...text].map(ch=>ch.charCodeAt(0));return scanIndexOf(bytes,marker,0,Math.min(bytes.length,8*1024*1024))>=0;}
+function parseIccProfile(bytes,source='ICC'){
+  if(bytes.length<128)return [{source,key:'ICC profile',value:`كتلة ICC مختصرة · ${formatBytes(bytes.length)}`}];
+  const declared=scanU32BE(bytes,0),version=`${bytes[8]>>4}.${bytes[8]&15}`,cmm=scanAscii(bytes,4,4).replace(/\0/g,''),deviceClass=scanAscii(bytes,12,4).replace(/\0/g,''),colorSpace=scanAscii(bytes,16,4).replace(/\0/g,''),pcs=scanAscii(bytes,20,4).replace(/\0/g,''),creator=scanAscii(bytes,80,4).replace(/\0/g,'');
+  return [{source,key:'ICC profile',value:`${formatBytes(bytes.length)} · declared ${declared} · ${deviceClass}/${colorSpace} → ${pcs} · v${version} · CMM ${cmm||'—'} · creator ${creator||'—'}`}];
+}
+function contentCredentialHints(bytes,source){const found=[];if(scanHasMarker(bytes,'c2pa')||scanHasMarker(bytes,'C2PA'))found.push({source,key:'C2PA / Content Credentials',value:'تم العثور على مؤشر c2pa؛ توجد بيانات منشأ/توقيع محتملة تحتاج محقق C2PA للتحقق من السلسلة والتوقيع.'});if(scanHasMarker(bytes,'jumb')||scanHasMarker(bytes,'JUMBF'))found.push({source,key:'JUMBF container',value:'تم العثور على حاوية JUMBF محتملة؛ قد تحتوي Manifest أو توقيعاً أو thumbnail.'});return found;}
+function exifThumbnailHints(bytes,source){const hints=[];let from=0;for(let n=0;n<4;n++){const start=scanIndexOf(bytes,[0xff,0xd8],from,bytes.length);if(start<0)break;let end=-1;for(let i=start+2;i+1<bytes.length;i++)if(bytes[i]===0xff&&bytes[i+1]===0xd9){end=i+2;break;}if(end>start+4){hints.push({source,key:'Embedded JPEG thumbnail',value:`JPEG مضمّن عند offset ${start} · ${formatBytes(end-start)}`});}from=start+2;}return hints;}
+function spatialIndicators(imageData){
+  const data=imageData.data,width=imageData.width,height=imageData.height,maxPixels=800000,stride=Math.max(1,Math.ceil((width*height)/maxPixels));let pvdSum=0,pvdSq=0,pvdN=0,lsbTransitions=0,lsbPairs=0;const complexity=[0,0,0,0];
+  for(let y=0;y<height;y+=stride)for(let x=0;x<width;x+=stride){const at=(y*width+x)*4,lum=.299*data[at]+.587*data[at+1]+.114*data[at+2];if(x+stride<width){const right=((y*width+Math.min(width-1,x+stride))*4),next=.299*data[right]+.587*data[right+1]+.114*data[right+2],d=Math.abs(lum-next);pvdSum+=d;pvdSq+=d*d;pvdN++;for(let bit=0;bit<4;bit++){const a=(data[at]>>bit)&1,b=(data[right]>>bit)&1;if(a!==b)complexity[bit]++;}if((data[at]&1)!==(data[right]&1))lsbTransitions++;lsbPairs++;}}
+  const mean=pvdN?pvdSum/pvdN:0,variance=pvdN?Math.max(0,pvdSq/pvdN-mean*mean):0,transition=lsbPairs?lsbTransitions/lsbPairs:0,plane=complexity.map(value=>lsbPairs?(value/lsbPairs).toFixed(3):'0');
+  return [`Spatial / PVD: mean Δ ${mean.toFixed(2)} · σ ${Math.sqrt(variance).toFixed(2)}`,`Spatial / LSB matching indicator: transition ${(transition*100).toFixed(2)}%`,`BPCS bit-plane complexity (R): b0 ${plane[0]} · b1 ${plane[1]} · b2 ${plane[2]} · b3 ${plane[3]}`,`Histogram/DE/RDH: راجع قمم histogram وLSB/فرق الجيران؛ لا يمكن استرجاع تقنية مجهولة بلا معاملات التضمين.`];
+}
+function advancedCoverage(bytes,report,imageData){
+  const entropy=scanEntropy(bytes),lines=[`Raw entropy: ${entropy.toFixed(4)} bit/byte${entropy>7.8?' · ciphertext/compressed candidate':''}`];
+  const credential=contentCredentialHints(bytes,'File');for(const item of credential)lines.push(`${item.key}: ${item.value}`);
+  if(report.format==='JPEG')lines.push('JPEG/DCT: فحص بنيوي لـ JSteg/F5/OutGuess/YASS يتطلب محلل معاملات JPEG متخصص؛ شغّل sitr_forensics.py مع stegdetect محلياً للحصول على كشف الأدوات المدعومة.');
+  if(report.format==='PNG'||report.format==='BMP')lines.push('Spatial: تمشيط LSB/الطبقات/المحاذاة محلياً؛ التشغيل المحلي لـ zsteg يوسّع اختبار OpenStego وCamouflage وzlib وprime-LSB.');
+  if(imageData)lines.push(...spatialIndicators(imageData));
+  lines.push('DWT/DFT/IWT/SVD/Spread-spectrum/AI: بلا مفتاح أو نموذج أو أداة المصدر يمكن إعطاء مؤشرات فقط، وليس استخراجاً موثوقاً عاماً.');
+  lines.push('Malware/Payloads: البصمات التنفيذية تعني ملفاً مرشحاً ولا تعني حكماً بوجود برمجية ضارة؛ استخدم ClamAV/YARA محلياً ضمن runner عند توفر قواعد موثوقة.');
+  return lines;
+}
+
 function parseTiffMetadata(raw,source='EXIF'){
   let base=0;if(scanAscii(raw,0,6)==='Exif\0\0')base=6;
   if(base+8>raw.length)return [{source,key:'EXIF',value:'كتلة EXIF مختصرة أو غير قابلة للتحليل'}];
@@ -639,7 +668,7 @@ function parseTiffMetadata(raw,source='EXIF'){
   const u32=(p)=>{if(p+4>raw.length)return null;return little?scanU32LE(raw,p):scanU32BE(raw,p);};
   if(u16(base+2)!==42)return [{source,key:'EXIF',value:'رأس TIFF غير معروف'}];
   const typeSize={1:1,2:1,3:2,4:4,5:8,7:1,9:4,10:8};
-  const names={0x010e:'ImageDescription',0x010f:'Make',0x0110:'Model',0x0112:'Orientation',0x0131:'Software',0x0132:'DateTime',0x013b:'Artist',0x8298:'Copyright',0x8769:'ExifIFD',0x8825:'GPSIFD',0x9003:'DateTimeOriginal',0x9004:'DateTimeDigitized',0x829a:'ExposureTime',0x829d:'FNumber',0x8827:'ISO',0x920a:'FocalLength',0x0001:'GPSLatitudeRef',0x0002:'GPSLatitude',0x0003:'GPSLongitudeRef',0x0004:'GPSLongitude',0x0006:'GPSAltitude',0x001d:'GPSDateStamp'};
+  const names={0x0103:'Compression',0x010e:'ImageDescription',0x010f:'Make',0x0110:'Model',0x0111:'StripOffsets',0x0112:'Orientation',0x0117:'StripByteCounts',0x0131:'Software',0x0132:'DateTime',0x013b:'Artist',0x0201:'JPEGInterchangeFormat',0x0202:'JPEGInterchangeFormatLength',0x8298:'Copyright',0x8769:'ExifIFD',0x8825:'GPSIFD',0x9003:'DateTimeOriginal',0x9004:'DateTimeDigitized',0x829a:'ExposureTime',0x829d:'FNumber',0x8827:'ISO',0x920a:'FocalLength',0x0001:'GPSLatitudeRef',0x0002:'GPSLatitude',0x0003:'GPSLongitudeRef',0x0004:'GPSLongitude',0x0006:'GPSAltitude',0x001d:'GPSDateStamp'};
   const output=[],visited=new Set();
   function valueFor(pos,type,count){
     const size=typeSize[type]||1,total=size*count;if(total>65536||pos<0||pos+total>raw.length)return '[قيمة خارج الحدود]';
@@ -658,6 +687,8 @@ function parseTiffMetadata(raw,source='EXIF'){
       if(tag===0x8769||tag===0x8825){const sub=u32(e+8);output.push({source,key,value:`IFD @ ${sub||0}`});if(sub)readIfd(sub,key,depth+1);}
       else output.push({source,key:group==='IFD0'?key:`${group}.${key}`,value:scanShort(String(valueFor(valuePos,type,n)),400)});
     }
+    // IFD1 يحتوي غالباً على معاينة JPEG مضمنة؛ اتبع المؤشر التالي بدلاً من تجاهله.
+    const nextPos=pos+2+count*12,nextIfd=u32(nextPos);if(group==='IFD0'&&nextIfd)readIfd(nextIfd,'ThumbnailIFD',depth+1);
   }
   const first=u32(base+4);if(first!==null)readIfd(first,'IFD0');
   return output.length?output:[{source,key:'EXIF',value:'لم توجد وسوم TIFF مقروءة'}];
@@ -726,16 +757,18 @@ async function parsePng(bytes){
     if(type==='iTXt'){
       const a=scanFindNull(data,0,data.length);if(a>=0&&a+3<=data.length){const compressed=data[a+1]===1;const b=scanFindNull(data,a+3,data.length),c=b<0?-1:scanFindNull(data,b+1,data.length);if(b>=0&&c>=0){let value=data.slice(c+1);if(compressed)value=await scanInflate(value)||value;report.metadata.push({source:'PNG iTXt',key:scanLatin1(data,0,a),value:scanShort(scanSafeText(value),1800)});}}
     }
-    if(type==='eXIf')report.metadata.push(...parseTiffMetadata(data,'PNG eXIf'));
-    if(type==='IEND'){report.endOffset=finish;break;}pos=finish;
+    if(type==='eXIf'){report.metadata.push(...parseTiffMetadata(data,'PNG eXIf'));report.metadata.push(...exifThumbnailHints(data,'PNG eXIf'));}
+    if(type==='iCCP'){const nul=scanFindNull(data,0,data.length);const profile=nul>=0?await scanInflate(data.slice(nul+2)):null;report.metadata.push(...parseIccProfile(profile||data,'PNG iCCP'));}
+    if(type==='IEND'){ report.endOffset=finish;break;}pos=finish;
   }
   if(report.endOffset!==null&&report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};
   const privateUnknown=report.chunks.filter(x=>x.unknown||x.private);if(privateUnknown.length)report.warnings.push(`وُجدت ${privateUnknown.length} كتلة PNG غير قياسية أو خاصة.`);
+  report.metadata.push(...contentCredentialHints(bytes,'PNG container'));
   return report;
 }
 function jpegMarkerName(marker){const names={0xd8:'SOI',0xd9:'EOI',0xda:'SOS',0xdb:'DQT',0xc0:'SOF0',0xc2:'SOF2',0xc4:'DHT',0xdd:'DRI',0xfe:'COM'};return names[marker]||(marker>=0xe0&&marker<=0xef?`APP${marker-0xe0}`:`Marker FF${marker.toString(16).toUpperCase()}`);}
 async function parseJpeg(bytes){
-  const report={format:'JPEG',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};let pos=2;
+  const report={format:'JPEG',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};const iccParts=[];let pos=2;
   while(pos+1<bytes.length){
     while(pos<bytes.length&&bytes[pos]!==0xff)pos++;if(pos+1>=bytes.length)break;while(pos<bytes.length&&bytes[pos]===0xff)pos++;const marker=bytes[pos++];
     if(marker===0xd9){report.endOffset=pos;break;}if(marker===0x00||marker===0x01||(marker>=0xd0&&marker<=0xd7))continue;
@@ -744,32 +777,35 @@ async function parseJpeg(bytes){
     const type=jpegMarkerName(marker),data=bytes.slice(dataStart,end);report.chunks.push({type,size:data.length,offset:pos-2,unknown:false});
     if(marker===0xfe)report.metadata.push({source:'JPEG COM',key:'Comment',value:scanShort(scanSafeText(data),1800)});
     if(marker===0xe1){
-      if(scanAscii(data,0,6)==='Exif\0\0')report.metadata.push(...parseTiffMetadata(data,'JPEG EXIF'));
+      if(scanAscii(data,0,6)==='Exif\0\0'){report.metadata.push(...parseTiffMetadata(data,'JPEG EXIF'));report.metadata.push(...exifThumbnailHints(data,'JPEG EXIF'));}
       else if(scanAscii(data,0,29)==='http://ns.adobe.com/xap/1.0/\0')report.metadata.push(...parseXmpMetadata(data.slice(29),'JPEG XMP'));
       else report.metadata.push({source:'JPEG APP1',key:'APP1 raw',value:scanShort(scanSafeText(data),500)});
     }
     if(marker===0xed&&scanAscii(data,0,14)==='Photoshop 3.0\0'){const iptc=parsePhotoshopApp13(data);report.metadata.push(...(iptc.length?iptc:[{source:'JPEG APP13',key:'Photoshop/IPTC',value:`كتلة IPTC/Photoshop بحجم ${formatBytes(data.length)}`}]))}
-    if(marker===0xe2&&scanAscii(data,0,11)==='ICC_PROFILE')report.metadata.push({source:'JPEG APP2',key:'ICC profile',value:`ملف تعريف لوني بحجم ${formatBytes(data.length)}`});
+    if(marker===0xeb)report.metadata.push(...contentCredentialHints(data,'JPEG APP11'));
+    if(marker===0xe2&&scanAscii(data,0,11)==='ICC_PROFILE'){const sequence=data[12]||0,count=data[13]||0;iccParts.push({sequence,count,bytes:data.slice(14)});}
     if(marker===0xda){
       let eoi=-1;for(let i=bytes.length-2;i>=end;i--)if(bytes[i]===0xff&&bytes[i+1]===0xd9){eoi=i;break;}
       if(eoi>=0){report.chunks.push({type:'Entropy-coded image data',size:eoi-end,offset:end,unknown:false});report.endOffset=eoi+2;}else report.warnings.push('لم يُعثر على علامة EOI في JPEG.');break;
     }pos=end;
   }
+  if(iccParts.length){const expected=iccParts[0].count,ordered=[...iccParts].sort((a,b)=>a.sequence-b.sequence);if(expected&&ordered.length===expected&&ordered.every((part,index)=>part.sequence===index+1&&part.count===expected)){const total=ordered.reduce((size,part)=>size+part.bytes.length,0),profile=new Uint8Array(total);let at=0;for(const part of ordered){profile.set(part.bytes,at);at+=part.bytes.length;}report.metadata.push(...parseIccProfile(profile,'JPEG APP2 ICC'));}else report.metadata.push({source:'JPEG APP2',key:'ICC profile',value:`ملف تعريف ICC غير مكتمل أو مقسم (${iccParts.length}/${expected||'?'})`});}
   if(report.endOffset!==null&&report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};
+  report.metadata.push(...contentCredentialHints(bytes,'JPEG container'));
   return report;
 }
 function parseWebp(bytes){
   const report={format:'WebP',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};if(bytes.length<12)return report;
   const declared=scanU32LE(bytes,4)+8;let pos=12;
-  while(pos+8<=bytes.length&&pos<declared){const type=scanAscii(bytes,pos,4),size=scanU32LE(bytes,pos+4),start=pos+8,end=start+size;if(end>bytes.length){report.warnings.push(`كتلة WebP غير مكتملة (${type}).`);break;}const data=bytes.slice(start,end);report.chunks.push({type,size,offset:pos,unknown:!['VP8 ','VP8L','VP8X','ALPH','ANIM','ANMF','ICCP','EXIF','XMP '].includes(type)});if(type==='XMP ')report.metadata.push(...parseXmpMetadata(data,'WebP XMP'));if(type==='EXIF')report.metadata.push(...parseTiffMetadata(data,'WebP EXIF'));if(type==='ICCP')report.metadata.push({source:'WebP ICCP',key:'ICC profile',value:`ملف تعريف لوني بحجم ${formatBytes(size)}`});pos=end+(size%2);}
-  report.endOffset=Math.min(declared,bytes.length);if(declared!==bytes.length)report.warnings.push(`حجم RIFF المعلن ${formatBytes(declared)} مقابل حجم فعلي ${formatBytes(bytes.length)}.`);if(report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};return report;
+  while(pos+8<=bytes.length&&pos<declared){const type=scanAscii(bytes,pos,4),size=scanU32LE(bytes,pos+4),start=pos+8,end=start+size;if(end>bytes.length){report.warnings.push(`كتلة WebP غير مكتملة (${type}).`);break;}const data=bytes.slice(start,end);report.chunks.push({type,size,offset:pos,unknown:!['VP8 ','VP8L','VP8X','ALPH','ANIM','ANMF','ICCP','EXIF','XMP '].includes(type)});if(type==='XMP ')report.metadata.push(...parseXmpMetadata(data,'WebP XMP'));if(type==='EXIF'){report.metadata.push(...parseTiffMetadata(data,'WebP EXIF'));report.metadata.push(...exifThumbnailHints(data,'WebP EXIF'));}if(type==='ICCP')report.metadata.push(...parseIccProfile(data,'WebP ICCP'));pos=end+(size%2);}
+  report.endOffset=Math.min(declared,bytes.length);if(declared!==bytes.length)report.warnings.push(`حجم RIFF المعلن ${formatBytes(declared)} مقابل حجم فعلي ${formatBytes(bytes.length)}.`);if(report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};report.metadata.push(...contentCredentialHints(bytes,'WebP container'));return report;
 }
 function parseGif(bytes){
-  const report={format:'GIF',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};let comments=0;for(let i=0;i+2<bytes.length;i++){if(bytes[i]===0x21&&bytes[i+1]===0xfe){let p=i+2,text=[];while(p<bytes.length&&bytes[p]){const n=bytes[p++];if(p+n>bytes.length)break;text.push(...bytes.slice(p,p+n));p+=n;}comments++;report.metadata.push({source:'GIF Comment',key:`Comment ${comments}`,value:scanShort(scanSafeText(new Uint8Array(text)),1800)});}}const trailer=bytes.lastIndexOf(0x3b);if(trailer>=0){report.endOffset=trailer+1;if(report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};}report.chunks.push({type:'GIF stream',size:bytes.length,offset:0,unknown:false});return report;
+  const report={format:'GIF',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};let comments=0;for(let i=0;i+2<bytes.length;i++){if(bytes[i]===0x21&&bytes[i+1]===0xfe){let p=i+2,text=[];while(p<bytes.length&&bytes[p]){const n=bytes[p++];if(p+n>bytes.length)break;text.push(...bytes.slice(p,p+n));p+=n;}comments++;report.metadata.push({source:'GIF Comment',key:`Comment ${comments}`,value:scanShort(scanSafeText(new Uint8Array(text)),1800)});}}const trailer=bytes.lastIndexOf(0x3b);if(trailer>=0){report.endOffset=trailer+1;if(report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};}report.chunks.push({type:'GIF stream',size:bytes.length,offset:0,unknown:false});report.metadata.push(...contentCredentialHints(bytes,'GIF container'));return report;
 }
-function parseBmp(bytes){const declared=bytes.length>=6?scanU32LE(bytes,2):0;const report={format:'BMP',chunks:[{type:'BMP stream',size:bytes.length,offset:0,unknown:false}],metadata:[],warnings:[],tail:null,endOffset:declared||null};if(declared&&declared<bytes.length)report.tail={offset:declared,length:bytes.length-declared};if(declared&&declared!==bytes.length)report.warnings.push(`حجم BMP المعلن ${formatBytes(declared)} مقابل الحجم الفعلي ${formatBytes(bytes.length)}.`);return report;}
-function parseTiff(bytes){return {format:'TIFF',chunks:[{type:'TIFF stream',size:bytes.length,offset:0,unknown:false}],metadata:parseTiffMetadata(bytes,'TIFF'),warnings:[],tail:null,endOffset:bytes.length};}
-async function parseContainer(bytes){const format=scanFormat(bytes);if(format==='PNG')return parsePng(bytes);if(format==='JPEG')return parseJpeg(bytes);if(format==='WebP')return parseWebp(bytes);if(format==='GIF')return parseGif(bytes);if(format==='BMP')return parseBmp(bytes);if(format==='TIFF')return parseTiff(bytes);return {format,chunks:[],metadata:[],warnings:['تنسيق غير مدعوم للتفكيك الكامل؛ سيجري فحص البصمات والبيانات الخام فقط.'],tail:null,endOffset:null};}
+function parseBmp(bytes){const declared=bytes.length>=6?scanU32LE(bytes,2):0;const report={format:'BMP',chunks:[{type:'BMP stream',size:bytes.length,offset:0,unknown:false}],metadata:[],warnings:[],tail:null,endOffset:declared||null};if(declared&&declared<bytes.length)report.tail={offset:declared,length:bytes.length-declared};if(declared&&declared!==bytes.length)report.warnings.push(`حجم BMP المعلن ${formatBytes(declared)} مقابل الحجم الفعلي ${formatBytes(bytes.length)}.`);report.metadata.push(...contentCredentialHints(bytes,'BMP container'));return report;}
+function parseTiff(bytes){const metadata=parseTiffMetadata(bytes,'TIFF');metadata.push(...exifThumbnailHints(bytes,'TIFF'));metadata.push(...contentCredentialHints(bytes,'TIFF container'));return {format:'TIFF',chunks:[{type:'TIFF stream',size:bytes.length,offset:0,unknown:false}],metadata,warnings:[],tail:null,endOffset:bytes.length};}
+async function parseContainer(bytes){const format=scanFormat(bytes);if(format==='PNG')return parsePng(bytes);if(format==='JPEG')return parseJpeg(bytes);if(format==='WebP')return parseWebp(bytes);if(format==='GIF')return parseGif(bytes);if(format==='BMP')return parseBmp(bytes);if(format==='TIFF')return parseTiff(bytes);return {format,chunks:[],metadata:contentCredentialHints(bytes,'Raw file'),warnings:['تنسيق غير مدعوم للتفكيك الكامل؛ سيجري فحص البصمات والبيانات الخام فقط.'],tail:null,endOffset:null};}
 function findFileSignatures(bytes,tail,deep=false){
   const ceiling=deep?12*1024*1024:2*1024*1024,areas=[[0,Math.min(bytes.length,ceiling)]];if(tail&&tail.offset>areas[0][1])areas.push([tail.offset,bytes.length]);
   const found=[];for(const sig of FILE_SIGNATURES){let positions=[];for(const [start,end] of areas){let cursor=start,repeat=0;while(cursor<end&&repeat<4){const at=scanIndexOf(bytes,sig.bytes,cursor,end);if(at<0)break;if(!positions.includes(at))positions.push(at);cursor=at+sig.bytes.length;repeat++;}}for(const offset of positions)found.push({name:sig.name,offset,insideTail:tail?offset>=tail.offset:false});}
@@ -861,8 +897,8 @@ $('simpleExtractFile').addEventListener('change',event=>{const file=event.target
 async function simpleReadSitr(image,key){const {data}=canvasPixels(image),found=locatePacket(data);if(!found)return {kind:'سِتر',status:'غير موجود'};if(found.encrypted&&!key)return {kind:'سِتر',status:'محمي',detail:'تحتاج مفتاحاً'};let payload=found.format==='v2'?await readV2Payload(data,found):readLegacy(data,V1_HEADER_SIZE+found.length,found.depth).slice(V1_HEADER_SIZE);if(found.encrypted){const cryptoKey=await deriveKey(key,found.salt);payload=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:found.iv},cryptoKey,payload));}if(found.compressed)payload=await gzipTransform(payload,'decompress');if(found.format==='v2'&&payload.length!==found.originalLength)throw new Error('طول حمولة سِتر غير مطابق.');const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',payload));if(!equalBytes(digest,found.digest))throw new Error('فحص سلامة سِتر فشل.');return {kind:'سِتر',status:'مستخرج',text:textDecoder.decode(payload),format:found.format};}
 function simpleContainer(report,signatures){const lines=[`الصيغة: ${report.format}`,`الأقسام: ${report.chunks.length}`];for(const item of report.chunks.slice(0,100))lines.push(`${item.offset}  ${item.type}  ${formatBytes(item.size)}${item.unknown?' [غير معروف]':''}${item.private?' [خاص]':''}`);if(report.tail)lines.push(`tail: ${formatBytes(report.tail.length)} @ ${report.tail.offset}`);if(signatures.length)lines.push(`البصمات: ${signatures.map(item=>`${item.name}@${item.offset}`).join(' · ')}`);if(report.warnings.length)lines.push(`ملاحظات: ${report.warnings.join(' | ')}`);return lines.join('\n');}
 function simpleSafe(value){return value&&String(value).trim()?String(value):'—';}
-$('simpleExtractButton').addEventListener('click',async()=>{const button=$('simpleExtractButton'),bytes=state.simple.extractBytes,image=state.simple.extractImage,key=$('simpleExtractKey').value;if(!bytes)return;button.disabled=true;$('simpleResults').classList.add('hidden');simpleStatus('simpleExtractStatus','١/٥ · قراءة الحاوية…');try{const report=await parseContainer(bytes),signatures=findFileSignatures(bytes,report.tail,true);let stats=null,probes={lines:['لا تتوفر بكسلات قابلة للفك.'],candidates:[]},recovered=[];simpleStatus('simpleExtractStatus','٢/٥ · فحص البيانات المضمنة…');if(image){try{const sitr=await simpleReadSitr(image,key);if(sitr.status==='مستخرج')recovered.push(`سِتر ${sitr.format}\n${sitr.text}`);else if(sitr.status==='محمي')recovered.push(`سِتر\n${sitr.detail}`);}catch(error){recovered.push(`سِتر\nتعذر الاسترداد: ${error.message}`);}try{const robust=rwDecode(image,key);recovered.push(`بصمة DCT\n${robust.text}`);}catch{}simpleStatus('simpleExtractStatus','٣/٥ · تحليل البتات…');const pixels=canvasPixels(image).data;stats=scanPixelStats(pixels);probes=probePixelStreams(pixels);simpleStatus('simpleExtractStatus','٤/٥ · تمشيط عميق…');const deep=await deepBitSweep(pixels);probes.lines.push(`— التمشيط العميق: ${deep.checked} تركيباً —`,...deep.lines);probes.candidates.push(...deep.candidates);}
-      simpleStatus('simpleExtractStatus','٥/٥ · تجهيز النتائج…');if(!recovered.length)recovered.push('لم تُسترد رسالة متوافقة بمفتاح الإدخال الحالي.');$('simpleRecovered').textContent=recovered.join('\n\n');$('simpleMetadata').textContent=formatMetadata(report);$('simpleContainer').textContent=simpleContainer(report,signatures);$('simplePixels').textContent=formatPixels(stats,probes,Boolean(image));$('simpleProbes').textContent=formatProbes(probes);$('simpleResults').classList.remove('hidden');state.simple.report={generatedAt:new Date().toISOString(),file:{name:state.simple.extractFile.name,size:bytes.length,type:state.simple.extractFile.type||null},container:report,signatures,pixelStats:stats,probes:probes.candidates,recovered};$('simpleReportButton').disabled=false;simpleStatus('simpleExtractStatus','اكتمل الاستخراج الشامل.');showToast('اكتمل التحقيق.');}catch(error){simpleStatus('simpleExtractStatus',error.message||'تعذر إتمام الاستخراج.',true);}finally{button.disabled=false;}});
+$('simpleExtractButton').addEventListener('click',async()=>{const button=$('simpleExtractButton'),bytes=state.simple.extractBytes,image=state.simple.extractImage,key=$('simpleExtractKey').value;if(!bytes)return;button.disabled=true;$('simpleResults').classList.add('hidden');simpleStatus('simpleExtractStatus','١/٥ · قراءة الحاوية…');try{const report=await parseContainer(bytes),signatures=findFileSignatures(bytes,report.tail,true);let stats=null,imagePixels=null,probes={lines:['لا تتوفر بكسلات قابلة للفك.'],candidates:[]},recovered=[];simpleStatus('simpleExtractStatus','٢/٥ · فحص البيانات المضمنة…');if(image){try{const sitr=await simpleReadSitr(image,key);if(sitr.status==='مستخرج')recovered.push(`سِتر ${sitr.format}\n${sitr.text}`);else if(sitr.status==='محمي')recovered.push(`سِتر\n${sitr.detail}`);}catch(error){recovered.push(`سِتر\nتعذر الاسترداد: ${error.message}`);}try{const robust=rwDecode(image,key);recovered.push(`بصمة DCT\n${robust.text}`);}catch{}simpleStatus('simpleExtractStatus','٣/٥ · تحليل البتات…');imagePixels=canvasPixels(image).data;stats=scanPixelStats(imagePixels);probes=probePixelStreams(imagePixels);simpleStatus('simpleExtractStatus','٤/٥ · تمشيط عميق…');const deep=await deepBitSweep(pixels);probes.lines.push(`— التمشيط العميق: ${deep.checked} تركيباً —`,...deep.lines);probes.candidates.push(...deep.candidates);}
+      simpleStatus('simpleExtractStatus','٥/٥ · تجهيز النتائج…');if(!recovered.length)recovered.push('لم تُسترد رسالة متوافقة بمفتاح الإدخال الحالي.');const advanced=advancedCoverage(bytes,report,imagePixels);$('simpleRecovered').textContent=recovered.join('\n\n');$('simpleMetadata').textContent=formatMetadata(report);$('simpleContainer').textContent=simpleContainer(report,signatures);$('simplePixels').textContent=formatPixels(stats,probes,Boolean(image));$('simpleProbes').textContent=formatProbes(probes);$('simpleAdvanced').textContent=advanced.join('\n\n');$('simpleResults').classList.remove('hidden');state.simple.report={generatedAt:new Date().toISOString(),file:{name:state.simple.extractFile.name,size:bytes.length,type:state.simple.extractFile.type||null},container:report,signatures,pixelStats:stats,probes:probes.candidates,advancedCoverage:advanced,recovered};$('simpleReportButton').disabled=false;simpleStatus('simpleExtractStatus','اكتمل الاستخراج الشامل.');showToast('اكتمل التحقيق.');}catch(error){simpleStatus('simpleExtractStatus',error.message||'تعذر إتمام الاستخراج.',true);}finally{button.disabled=false;}});
 $('simpleReportButton').addEventListener('click',()=>{if(!state.simple.report)return;const blob=new Blob([JSON.stringify(state.simple.report,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sitr-complete-extraction.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 simplePage('input');
 
