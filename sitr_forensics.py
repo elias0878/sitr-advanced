@@ -15,6 +15,8 @@
   exiftool   EXIF/IPTC/XMP/ICC ووسوم غير معروفة
   zsteg      تحليل PNG/BMP لمسارات LSB المعروفة
   stegdetect كشف احتمالي لبعض تقنيات JPEG (JSteg/OutGuess/JPHide)
+  Aletheia  تقييم احتمالي لـ OutGuess/Steghide/nsF5/J-UNIWARD وRS/SPA/WS، بلا brute force
+  StegExpose JAR  RS/Sample Pairs/Chi-square/Primary Sets fusion عند تمرير مسار JAR موثوق
   c2patool  فحص اختياري لبيانات C2PA / Content Credentials؛ يتطلب موافقة شبكية صريحة
   clamscan  فحص دفاعي للملف محلياً
   yara      فحص اختياري بقواعد موثوقة يحددها المستخدم
@@ -28,8 +30,10 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import shutil
 import subprocess
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
@@ -240,6 +244,54 @@ def yara_module(path: Path, rules: Path | None) -> dict[str, Any]:
     return run([tool, "--no-warnings", str(rules), str(path)], timeout=180)
 
 
+def aletheia_module(path: Path, suffix: str) -> dict[str, Any]:
+    """يشغل كاشف Aletheia فقط؛ لا يستدعي أية أوامر brute-force الموجودة في الأداة."""
+    tool = available(("aletheia.py", "aletheia"))
+    if not tool:
+        return {"status": "not_installed", "command": ["aletheia.py", "auto", "<directory>"]}
+    if suffix not in {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}:
+        return {"status": "skipped", "reason": "Aletheia هنا مقصور على مسارات الصور المدعومة"}
+    # auto موثق للـ JPEG؛ نضع نسخة/رابطاً مؤقتاً في مجلد ليبقى الإدخال read-only.
+    if suffix in {".jpg", ".jpeg"}:
+        with tempfile.TemporaryDirectory(prefix="sitr-aletheia-") as directory:
+            linked = Path(directory) / path.name
+            try:
+                os.symlink(path, linked)
+            except OSError:
+                shutil.copy2(path, linked)
+            result = run([tool, "auto", directory], timeout=300)
+            result["note"] = "Aletheia auto: احتمالات OutGuess/Steghide/nsF5/J-UNIWARD فقط؛ لا brute-force."
+            return result
+    checks = {name: run([tool, name, str(path)], timeout=240) for name in ("rs", "spa", "ws")}
+    return {
+        "status": "completed",
+        "mode": "structural LSB statistics",
+        "note": "Aletheia RS/SPA/WS هي مؤشرات إحصائية وليست استرداد حمولة.",
+        "checks": checks,
+    }
+
+
+def stegexpose_module(path: Path, suffix: str, jar: Path | None) -> dict[str, Any]:
+    """يشغل StegExpose اختيارياً في مجلد مؤقت، بلا استخراج ملفات أو تشغيل حمولة."""
+    if jar is None:
+        return {"status": "not_run", "reason": "مرر --stegexpose-jar لمسار JAR محلي موثوق لتفعيل RS/SPA/χ²/Primary Sets fusion."}
+    if not jar.is_file():
+        return {"status": "skipped", "reason": f"ملف StegExpose JAR غير موجود: {jar}"}
+    if suffix not in {".png", ".bmp", ".jpg", ".jpeg"}:
+        return {"status": "skipped", "reason": "صيغة غير مناسبة لفحص StegExpose"}
+    if not shutil.which("java"):
+        return {"status": "not_installed", "command": ["java", "-jar", str(jar), "<directory>"]}
+    with tempfile.TemporaryDirectory(prefix="sitr-stegexpose-") as directory:
+        linked = Path(directory) / path.name
+        try:
+            os.symlink(path, linked)
+        except OSError:
+            shutil.copy2(path, linked)
+        result = run(["java", "-jar", str(jar), directory], timeout=300)
+        result["note"] = "StegExpose fusion (RS/Sample Pairs/χ²/Primary Sets) مؤشر احتمالي فقط؛ لا payload recovery."
+        return result
+
+
 def structure_modules(path: Path, suffix: str, signatures: set[str]) -> dict[str, dict[str, Any]]:
     """فاحصات قراءة فقط للحاويات التي ظهرت بصماتها؛ لا تستخرج ملفات إلى القرص."""
     modules: dict[str, dict[str, Any]] = {}
@@ -286,6 +338,7 @@ def main() -> int:
     parser.add_argument("--full-strings", action="store_true", help="خفض حد strings من 120 إلى 24 حرفاً")
     parser.add_argument("--yara-rules", type=Path, help="مسار قواعد YARA موثوقة محلياً (اختياري)")
     parser.add_argument("--skip-clamav", action="store_true", help="تخطي ClamAV حتى لو كان مثبتاً")
+    parser.add_argument("--stegexpose-jar", type=Path, help="مسار StegExpose JAR محلي موثوق (اختياري، قراءة فقط)")
     parser.add_argument(
         "--allow-c2pa-network",
         action="store_true",
@@ -300,13 +353,14 @@ def main() -> int:
         parser.error("الملف أكبر من حد المشغل الآمن: 750 م.ب")
 
     rules = args.yara_rules.expanduser().resolve() if args.yara_rules else None
+    stegexpose_jar = args.stegexpose_jar.expanduser().resolve() if args.stegexpose_jar else None
     minimum = "24" if args.full_strings else "120"
     identity = file_identity(path)
     signature_names = {str(item["name"]) for item in identity["signatures"]}
-    tools = ("exiftool", "zsteg", "stegdetect", "c2patool", "clamscan", "yara", "yara64", "steghide", "binwalk", "strings", "pngcheck", "jpeginfo", "pdfinfo", "zipinfo", "7z", "7zz", "oleid", "ffprobe")
+    tools = ("exiftool", "zsteg", "stegdetect", "aletheia.py", "aletheia", "c2patool", "clamscan", "yara", "yara64", "steghide", "binwalk", "strings", "file", "pngcheck", "jpeginfo", "pdfinfo", "zipinfo", "7z", "7zz", "oleid", "ffprobe", "java")
     report: dict[str, Any] = {
         "tool": "Sitr Forensics Runner",
-        "version": "2.3",
+        "version": "2.5",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "offline_only": not args.allow_c2pa_network,
         "c2pa_network_policy": (
@@ -330,9 +384,13 @@ def main() -> int:
     report["modules"]["strings_ascii"] = run(["strings", "-a", "-n", minimum, str(path)])
     report["modules"]["strings_utf16le"] = run(["strings", "-a", "-e", "l", "-n", minimum, str(path)])
     report["modules"]["strings_utf16be"] = run(["strings", "-a", "-e", "b", "-n", minimum, str(path)])
-    # Binwalk للمؤشرات والبصمات فقط: لا نستخدم -e أو استخراجاً آلياً.
-    report["modules"]["binwalk"] = run(["binwalk", str(path)])
+    report["modules"]["file_identity"] = run(["file", "-b", "--mime-type", "--mime-encoding", str(path)])
+    # Binwalk للمؤشرات والبصمات/الإنتروبيا فقط: لا نستخدم -e أو استخراجاً آلياً.
+    report["modules"]["binwalk"] = run(["binwalk", "--signature", str(path)])
+    report["modules"]["binwalk_entropy"] = run(["binwalk", "--entropy", "--nplot", str(path)], timeout=180)
     report["modules"].update(structure_modules(path, suffix, signature_names))
+    report["modules"]["aletheia"] = aletheia_module(path, suffix)
+    report["modules"]["stegexpose"] = stegexpose_module(path, suffix, stegexpose_jar)
     report["modules"]["c2pa"] = c2pa_module(path, args.allow_c2pa_network)
     report["modules"]["clamav"] = clamav_module(path, args.skip_clamav)
     report["modules"]["yara"] = yara_module(path, rules)
@@ -360,6 +418,21 @@ def main() -> int:
         }
     else:
         report["modules"]["steghide_info"] = {"status": "skipped", "reason": "صيغة غير مدعومة عادةً من steghide"}
+
+    report["evidence_summary"] = {
+        "signature_candidates": len(identity["signatures"]),
+        "signature_scan_scope": identity["signature_scan_scope"],
+        "external_modules": {
+            name: module.get("status", "nested")
+            for name, module in report["modules"].items()
+        },
+        "interpretation": {
+            "recovered": "محتوى فكّته حاوية/أداة بصورة قابلة للعرض",
+            "carved_candidate": "بداية stream/ملف تحتاج parsing أو فحصاً مستقلاً",
+            "structural_indicator": "دليل بنيوي مثل tail أو chunk غير معياري",
+            "statistical_indicator": "مؤشر احتمالي لا يثبت وجود حمولة",
+        },
+    }
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

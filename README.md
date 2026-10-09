@@ -32,11 +32,13 @@
 
 واجهة الويب تضيف تمشيطاً أوسع متعدد الملفات الشخصية لطبقات البت: جميع ترتيبات RGB الستة، وRGBA/ARGB، والقنوات المفردة، وطبقات 0–7، واتجاهات الطبقات ومحاذاة البايت، مع قراءة سلاسل ASCII وUTF‑8 وUTF‑16. كما تمسح بصمات الملفات خلال كامل الملف في وضع الاستخراج الشامل، وتفكك محلياً أسماء ZIP، وحقول PDF الواضحة، وID3 للصوت، وWAVE/INFO، وGZIP ضمن حد آمن للمعاينة، إضافةً إلى metadata والحاوية. لا تشغّل أو تحفظ أي حمولة تلقائياً، ولا تعيد تسمية المؤشر الاحتمالي على أنه استخراج مؤكد.
 
-للتحقيق الأوسع على جهازك، يتضمن المستودع `sitr_forensics.py`، وهو مشغل محلي آمن يمسح بصمات الملفات عبر كامل الملف على دفعات، ويدمج النتائج ـ إن كانت الأدوات مثبتة ـ من `exiftool` و`zsteg` و`stegdetect` و`c2patool` و`ClamAV` و`YARA` و`steghide` و`binwalk` و`strings` و`pngcheck` و`jpeginfo` و`pdfinfo` و`zipinfo` و`7z` و`oleid` و`ffprobe` في تقرير JSON واحد. لا يستخدم شبكة، ولا يحدّث قواعد، ولا يجرب كلمات مرور، ولا ينفذ استخراجاً تلقائياً للملفات. تعمل YARA فقط عند تمرير مسار قواعد موثوقة تملكها. يظل `c2patool` معطلاً افتراضياً لأن بعض الإصدارات قد تجلب manifest بعيداً؛ لا تشغّله إلا بعد مراجعة الملف وسياسة الشبكة:
+للتحقيق الأوسع على جهازك، يتضمن المستودع `sitr_forensics.py`، وهو مشغل محلي آمن يمسح بصمات الملفات عبر كامل الملف على دفعات، ويدمج النتائج ـ إن كانت الأدوات مثبتة ـ من `exiftool` و`zsteg` و`stegdetect` و`Aletheia` و`StegExpose` و`c2patool` و`ClamAV` و`YARA` و`steghide` و`binwalk` و`strings` و`pngcheck` و`jpeginfo` و`pdfinfo` و`zipinfo` و`7z` و`oleid` و`ffprobe` في تقرير JSON واحد. لا يستخدم شبكة، ولا يحدّث قواعد، ولا يجرب كلمات مرور، ولا ينفذ استخراجاً تلقائياً للملفات. تعمل YARA فقط عند تمرير مسار قواعد موثوقة تملكها. يظل `c2patool` معطلاً افتراضياً لأن بعض الإصدارات قد تجلب manifest بعيداً؛ لا تشغّله إلا بعد مراجعة الملف وسياسة الشبكة:
 
 ```bash
 python3 sitr_forensics.py image.png --out sitr-report.json
 python3 sitr_forensics.py sample.jpg --yara-rules ./trusted-rules.yar
+# فحص StegExpose اختياري من JAR محلي موثوق؛ لا ينشئ ملفات استخراج:
+python3 sitr_forensics.py image.png --stegexpose-jar ./StegExpose.jar
 # فعّل C2PA فقط إن كنت تقبل احتمال جلب manifest بعيد:
 python3 sitr_forensics.py sample.jpg --allow-c2pa-network
 # اختبار steghide بكلمة مرور تعرفها أنت فقط:
