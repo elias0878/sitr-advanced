@@ -14,6 +14,18 @@
 - **تحقق بعد الاستخراج:** تبصم الرسالة الأصلية بـ SHA-256 وتُفحص بعد فك التشفير وفك الضغط.
 - **توافق عكسي:** يمكن لوضع الاستخراج قراءة ملفات سِتر V1 السابقة.
 
+## الفحص الجنائي المحلي
+
+يضيف تبويب **فحص جنائي** قراءة تحليلية لا تعتمد على أن تكون الصورة منشأة بسِتر:
+
+- تفكيك حاويات PNG وJPEG وWebP وGIF وBMP وTIFF محلياً، مع عرض الأقسام والكتل الخاصة أو غير المعروفة.
+- استخراج وعرض `tEXt` و`zTXt` و`iTXt` و`eXIf` في PNG، وEXIF/XMP/COM/IPTC في JPEG، وEXIF/XMP/ICCP في WebP، وتعليقات GIF.
+- كشف البيانات التي تأتي بعد نهاية الحاوية والبصمات الشائعة لملفات مضافة مثل ZIP وGZIP وRAR و7z وPDF، وتوقيعات سِتر.
+- تحليل إحصائي لقنوات LSB في الصور التي يستطيع المتصفح فك ترميزها: توازن البت، Shannon entropy، وتحليل χ² على أزواج القيم، مع معاينة مرئية لطبقة LSB.
+- فحص مسارات LSB المتسلسلة الشائعة في RGB والقنوات المفردة لاستخراج البصمات والنصوص القابلة للقراءة.
+
+الفاحص لا يدّعي استرجاع كل إخفاء ممكن: البيانات المشفرة جيداً، والتقنيات التحويلية في JPEG، والأنماط المبعثرة التي تعتمد على مفتاح لا يمكن فكها بلا الأداة أو المفتاح المناسب. كما أن التحليل الإحصائي دليل احتمالي وقد يعطي نتائج إيجابية كاذبة.
+
 ## التشغيل محلياً
 
 لا توجد تبعيات ولا عملية بناء:
@@ -51,6 +63,8 @@ npx vercel --prod --yes
 
 - [Web Crypto API — MDN](https://developer.mozilla.org/docs/Web/API/Web_Crypto_API)
 - [Compression Streams API — MDN](https://developer.mozilla.org/docs/Web/API/Compression_Streams_API)
+- [PNG Specification — W3C](https://www.w3.org/TR/PNG-Chunks.html)
+- [WebP Image Format — RFC 9649](https://www.rfc-editor.org/rfc/rfc9649.html)
 - [GitHub REST API: إنشاء مستودع للمستخدم الموثق](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-a-repository-for-the-authenticated-user)
 - [Vercel REST API: إنشاء نشر](https://vercel.com/docs/rest-api/deployments/create-a-new-deployment)
 

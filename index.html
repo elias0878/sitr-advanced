@@ -26,6 +26,7 @@
     .action-row{display:flex;gap:10px;align-items:center;margin-top:20px}.primary{border:0;border-radius:11px;background:linear-gradient(135deg,#62d9bd,#4aa5e7);color:#062434;padding:13px 19px;font-weight:800;box-shadow:0 10px 22px rgba(60,180,168,.16);transition:transform .18s,filter .18s}.primary:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06)}.primary:disabled{cursor:not-allowed;opacity:.45}.secondary{border:1px solid var(--line);border-radius:11px;background:transparent;color:var(--ink);padding:12px 15px;font-weight:700;font-size:13px}.secondary:hover{background:rgba(255,255,255,.04)}.support{color:var(--muted);font-size:11px;line-height:1.55}
     .side-stack{display:grid;gap:20px}.security{padding:20px 22px}.security h3{font-size:15px;margin:0 0 14px}.security-list{list-style:none;padding:0;margin:0;display:grid;gap:13px}.security-list li{display:grid;grid-template-columns:27px 1fr;gap:9px;align-items:start;font-size:12px;color:var(--muted);line-height:1.65}.shield{height:25px;width:25px;background:rgba(97,215,189,.1);color:var(--primary);border-radius:8px;display:grid;place-items:center}.security-list b{color:var(--ink);display:block;font-size:12px;margin-bottom:1px}.how{padding:20px 22px}.how h3{font-size:15px;margin:0 0 16px}.how-item{position:relative;display:flex;gap:11px;padding-bottom:15px;color:var(--muted);font-size:12px;line-height:1.65}.how-item:not(:last-child):before{content:"";position:absolute;right:10px;top:24px;width:1px;height:calc(100% - 14px);background:var(--line)}.num{height:21px;width:21px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(139,174,255,.14);color:var(--accent);font-weight:bold;font-size:11px}.how-item b{color:var(--ink)}
     .result-card{margin-top:20px}.result-main{padding:21px 22px}.result-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.status-chip{font-size:12px;font-weight:bold;padding:7px 10px;border-radius:50px;background:rgba(97,215,189,.1);color:var(--primary)}.status-chip.error{background:rgba(255,129,139,.11);color:var(--danger)}.status-chip.warning{background:rgba(240,188,103,.1);color:var(--warning)}.result-main h3{margin:10px 0 5px;font-size:17px}.result-main p{color:var(--muted);font-size:12px;line-height:1.7;margin:0}.output{min-height:108px;max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word;direction:auto;margin-top:15px;background:#0b1627;border:1px solid var(--line);border-radius:11px;padding:13px;color:#ddecff;font-family:Consolas,"Cascadia Code",monospace;font-size:12px;line-height:1.75}.result-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.alert{display:none;padding:11px 13px;border-radius:10px;font-size:12px;line-height:1.65;margin-top:14px}.alert.show{display:block}.alert.error{color:#ffd5d9;background:rgba(255,129,139,.1);border:1px solid rgba(255,129,139,.21)}.alert.info{color:#d5e6ff;background:rgba(139,174,255,.09);border:1px solid rgba(139,174,255,.18)}
+    .scan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}.scan-block{border:1px solid var(--line);background:rgba(5,14,27,.2);border-radius:13px;overflow:hidden}.scan-block.wide{grid-column:1/-1}.scan-block h4{font-size:13px;margin:0;padding:12px 13px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}.scan-block h4 span{font-size:10px;color:var(--muted);font-weight:normal}.scan-output{margin:0;min-height:86px;max-height:280px;overflow:auto;white-space:pre-wrap;word-break:break-word;direction:auto;padding:12px 13px;color:#cbd9eb;font-family:Consolas,"Cascadia Code",monospace;font-size:11px;line-height:1.7}.scan-findings{display:grid;gap:8px;padding:12px}.finding{border-right:3px solid var(--faint);border-radius:7px;background:rgba(255,255,255,.025);padding:9px 10px;font-size:12px;line-height:1.65;color:var(--muted)}.finding b{display:block;color:var(--ink);font-size:12px}.finding.high{border-color:var(--danger)}.finding.medium{border-color:var(--warning)}.finding.low{border-color:var(--accent)}.scan-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:16px}.kpi{border:1px solid var(--line);border-radius:10px;background:rgba(139,174,255,.045);padding:10px}.kpi b{display:block;font-size:16px;color:var(--primary);font-variant-numeric:tabular-nums}.kpi span{display:block;color:var(--muted);font-size:10px;margin-top:4px}.scan-preview{display:block;max-width:100%;max-height:230px;object-fit:contain;background:#07111f;border:1px solid var(--line);border-radius:9px;margin:11px auto}.scan-disclaimer{margin-top:13px;padding:11px 13px;background:rgba(139,174,255,.06);border:1px solid rgba(139,174,255,.17);border-radius:10px;color:#b8cae4;font-size:11px;line-height:1.75}.metadata-key{color:#8baeff}.metadata-value{color:#c6f2e7}@media (max-width:600px){.scan-grid{grid-template-columns:1fr}.scan-block.wide{grid-column:auto}.scan-kpis{grid-template-columns:1fr 1fr}}
     .download-panel{display:none;margin-top:15px;border:1px solid rgba(97,215,189,.26);background:rgba(97,215,189,.055);border-radius:13px;padding:14px}.download-panel.show{display:flex;align-items:center;justify-content:space-between;gap:15px}.download-panel b{display:block;font-size:13px}.download-panel span{display:block;color:var(--muted);font-size:11px;margin-top:4px}.footer{color:#718299;border-top:1px solid var(--line);padding:20px 0 30px;text-align:center;font-size:11px;line-height:1.7}.footer code{direction:ltr;color:#9fb6d3}
     .toast{position:fixed;z-index:20;left:50%;bottom:24px;translate:-50% 20px;opacity:0;pointer-events:none;color:#0b2530;background:#baf8e9;border-radius:10px;padding:11px 15px;font-size:13px;font-weight:bold;box-shadow:0 12px 36px rgba(0,0,0,.35);transition:.23s}.toast.show{opacity:1;translate:-50% 0}.loader{width:17px;height:17px;border-radius:50%;border:2px solid rgba(8,47,54,.32);border-top-color:#083b47;display:inline-block;vertical-align:middle;animation:spin .7s linear infinite;margin-left:6px}@keyframes spin{to{transform:rotate(360deg)}}
     @media (max-width:880px){.workspace{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.protocol{justify-self:start}.side-stack{grid-template-columns:1fr 1fr}.topbar{padding-top:19px}}@media (max-width:560px){.shell{width:min(100% - 24px,1180px)}.top-status{font-size:0;padding:9px}.top-status .dot{margin:0}.hero{padding-top:32px}.card-body,.card-head,.security,.how{padding-right:15px;padding-left:15px}.option-grid,.side-stack{grid-template-columns:1fr}.image-info{grid-template-columns:80px 1fr}.thumb{height:58px}.action-row{align-items:stretch;flex-direction:column}.primary,.secondary{width:100%}.tab{padding:13px 12px;font-size:13px}.protocol{display:none}}
@@ -53,6 +54,7 @@
     <nav class="tabbar" aria-label="وضع الأداة">
       <button class="tab active" id="embedTab" type="button" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0-12 4.5 4.5M12 3 7.5 7.5M5 15.5v3A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>إخفاء نص</button>
       <button class="tab" id="extractTab" type="button" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 21V9m0 12-4.5-4.5M12 21l4.5-4.5M5 8.5v-3A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>استخراج نص</button>
+      <button class="tab" id="scanTab" type="button" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4M11 8.2v5.6M8.2 11h5.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>فحص جنائي</button>
     </nav>
 
     <main>
@@ -139,8 +141,48 @@
           <div class="result-main"><div class="result-top"><span id="resultChip" class="status-chip">تم التحقق</span><span id="resultMeta" class="hint"></span></div><h3 id="resultTitle">تم العثور على رسالة</h3><p id="resultDescription">تم التحقق من سلامة البيانات.</p><div id="extractedText" class="output" tabindex="0"></div><div class="result-actions"><button id="copyButton" class="secondary" type="button">نسخ النص</button><button id="saveTextButton" class="secondary" type="button">حفظ كملف TXT</button></div></div>
         </section>
       </section>
+
+      <section id="scanPanel" class="workspace hidden">
+        <div class="card">
+          <div class="card-head"><div style="display:flex;gap:9px;align-items:center"><i class="step">1</i><h3>افتح ملف الصورة للفحص</h3></div><span class="hint">يقرأ الملف الخام محلياً</span></div>
+          <div class="card-body">
+            <div class="dropzone" id="scanDrop">
+              <input id="scanFile" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff" aria-label="اختيار ملف لفحص البيانات المخفية" />
+              <div class="upload-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="5.8" stroke="currentColor" stroke-width="1.8"/><path d="m15.2 15.2 4.3 4.3M10.8 8v5.6M8 10.8h5.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+              <strong>اسحب صورة أو <b>اختر ملفاً</b></strong><span>PNG · JPEG · WebP · GIF · BMP · TIFF — لا يُرفع الملف إلى أي خادم.</span>
+            </div>
+            <div id="scanImageInfo" class="image-info hidden">
+              <div class="thumb"><img id="scanThumb" alt="معاينة الملف المفحوص" /></div>
+              <div><div class="file-title" id="scanFileName"></div><div class="file-meta" id="scanFileMeta"></div><div class="file-actions"><button class="text-btn" type="button" id="scanReplace">تبديل الملف</button><button class="text-btn" type="button" id="scanClear">إزالة</button></div></div>
+            </div>
+            <div class="action-row"><button class="primary" id="scanButton" type="button" disabled>إجراء فحص شامل</button><span class="support">الحاوية · Metadata · بيانات لاحقة · بصمات · تحليل LSB</span></div>
+            <div id="scanAlert" class="alert error" role="alert"></div>
+          </div>
+        </div>
+        <aside class="side-stack">
+          <div class="card security"><h3>نطاق الفحص المتقدم</h3><ul class="security-list"><li><span class="shield">▤</span><span><b>بنية الملف الخام</b>يفكك PNG وJPEG وWebP وGIF، ويكشف الأقسام غير المعروفة والبيانات بعد نهاية الملف.</span></li><li><span class="shield">⌘</span><span><b>Metadata قابلة للقراءة</b>يعرض النصوص وXMP وEXIF المتاح وتعليقات الصور، بما فيها الكتل المضغوطة.</span></li><li><span class="shield">◌</span><span><b>استدلال بكسلي</b>يتحقق من توقيعات سِتر، ومسارات LSB الشائعة، وانتروبيا البتات وتحليل الأزواج.</span></li></ul></div>
+          <div class="card how"><h3>حدود علمية واضحة</h3><div class="how-item"><span class="num">i</span><span><b>يكشف ولا يخمن المفاتيح.</b><br>التشفير السليم أو التوزيع بكلمة سر لا يمكن فكهما دون المفتاح.</span></div><div class="how-item"><span class="num">!</span><span><b>المؤشرات ليست دليلاً قاطعاً.</b><br>تحليل LSB إحصائي وقد ينتج إشارات إيجابية كاذبة.</span></div><div class="how-item"><span class="num">✓</span><span><b>افحص الملف الأصلي دائماً.</b><br>إعادة الحفظ أو الضغط قد تمحو الدليل أو تغيّر البتات.</span></div></div>
+        </aside>
+        <section id="scanResultCard" class="card result-card hidden" style="grid-column:1/-1">
+          <div class="result-main">
+            <div class="result-top"><span id="scanChip" class="status-chip">اكتمل الفحص</span><span id="scanMeta" class="hint"></span></div>
+            <h3 id="scanTitle">تقرير الفحص الجنائي</h3><p id="scanDescription">يعرض التقرير ما يمكن قراءته والتحقق منه محلياً.</p>
+            <div class="scan-kpis"><div class="kpi"><b id="scanKpiFormat">—</b><span>الحاوية</span></div><div class="kpi"><b id="scanKpiChunks">—</b><span>الأقسام/الكتل</span></div><div class="kpi"><b id="scanKpiMetadata">—</b><span>حقول قابلة للقراءة</span></div><div class="kpi"><b id="scanKpiTail">—</b><span>بيانات بعد النهاية</span></div></div>
+            <div class="scan-grid">
+              <div class="scan-block wide"><h4>النتائج والمؤشرات <span>تقييمات احتمالية، لا أحكام قطعية</span></h4><div id="scanFindings" class="scan-findings"></div></div>
+              <div class="scan-block"><h4>Metadata والنصوص المضمّنة <span>EXIF · XMP · تعليقات · PNG text</span></h4><pre id="scanMetadataOutput" class="scan-output"></pre></div>
+              <div class="scan-block"><h4>بنية الحاوية والحمولات <span>chunks · markers · tail · signatures</span></h4><pre id="scanContainerOutput" class="scan-output"></pre></div>
+              <div class="scan-block"><h4>تحليل البتات الأقل أهمية <span>LSB · entropy · chi-square</span></h4><pre id="scanPixelOutput" class="scan-output"></pre></div>
+              <div class="scan-block"><h4>بصمات ومسارات قراءة محتملة <span>سِتر · نصوص متسلسلة · magic bytes</span></h4><pre id="scanProbeOutput" class="scan-output"></pre></div>
+              <div class="scan-block wide"><h4>معاينة طبقة LSB <span>تكبير مرئي للبت الأدنى في قنوات RGB</span></h4><img id="scanPlanePreview" class="scan-preview hidden" alt="معاينة طبقة البتات الأقل أهمية" /></div>
+            </div>
+            <div class="scan-disclaimer">هذا الفاحص يعرض البيانات الواضحة، الحاويات غير القياسية، والتوقيعات ونتائج الاستدلال الإحصائي. لا توجد أداة تستطيع ضمان العثور على <b>كل</b> إخفاء ممكن؛ فالبيانات المشفرة جيداً، والإخفاء التحويلي داخل JPEG، والطرق المعتمدة على مفتاح قد لا تكون قابلة للاسترجاع بلا أداة المصدر أو المفتاح.</div>
+            <div class="result-actions"><button id="copyScanButton" class="secondary" type="button">نسخ ملخص التقرير</button><button id="saveScanButton" class="secondary" type="button">تنزيل تقرير JSON</button></div>
+          </div>
+        </section>
+      </section>
     </main>
-    <footer class="footer">صُممت للأغراض المشروعة وحماية الخصوصية. احفظ الصورة الناتجة دون تعديل. <code>v1.0 · local-only</code></footer>
+    <footer class="footer">صُممت للأغراض المشروعة وحماية الخصوصية. احفظ الصورة الناتجة دون تعديل. <code>v2.1 · local-only forensic scan</code></footer>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -170,7 +212,7 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder('utf-8', {fatal:true});
 const codecSupported = typeof CompressionStream !== 'undefined' && typeof DecompressionStream !== 'undefined';
 const $ = (id) => document.getElementById(id);
-const state = { embed:{image:null,file:null,outputUrl:null,outputBlob:null}, extract:{image:null,file:null}, lastText:'' };
+const state = { embed:{image:null,file:null,outputUrl:null,outputBlob:null}, extract:{image:null,file:null}, scan:{image:null,file:null,bytes:null,objectUrl:null}, lastText:'', lastScan:null };
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes < 0) return '—';
@@ -191,14 +233,14 @@ function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a;}
 function dataView(bytes){return new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);}
 
 function switchTab(mode) {
-  const embedding=mode==='embed';
-  $('embedPanel').classList.toggle('hidden',!embedding); $('extractPanel').classList.toggle('hidden',embedding);
-  $('embedTab').classList.toggle('active',embedding); $('extractTab').classList.toggle('active',!embedding);
-  $('embedTab').setAttribute('aria-selected',embedding); $('extractTab').setAttribute('aria-selected',!embedding);
-  setAlert('embedAlert');setAlert('extractAlert');
+  const embedding=mode==='embed', extracting=mode==='extract', scanning=mode==='scan';
+  $('embedPanel').classList.toggle('hidden',!embedding); $('extractPanel').classList.toggle('hidden',!extracting); $('scanPanel').classList.toggle('hidden',!scanning);
+  [['embedTab',embedding],['extractTab',extracting],['scanTab',scanning]].forEach(([id,active])=>{$(id).classList.toggle('active',active);$(id).setAttribute('aria-selected',active);});
+  setAlert('embedAlert');setAlert('extractAlert');setAlert('scanAlert');
 }
 $('embedTab').addEventListener('click',()=>switchTab('embed'));
 $('extractTab').addEventListener('click',()=>switchTab('extract'));
+$('scanTab').addEventListener('click',()=>switchTab('scan'));
 
 function attachDrop(dropId,fileId,handler) {
   const drop=$(dropId),input=$(fileId);
@@ -423,6 +465,198 @@ $('extractButton').addEventListener('click',async()=>{
 });
 $('copyButton').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(state.lastText);showToast('تم نسخ النص.');}catch{showToast('تعذر الوصول للحافظة؛ انسخ النص يدوياً.');}});
 $('saveTextButton').addEventListener('click',()=>{const blob=new Blob([state.lastText],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='رسالة-مستخرجة.txt';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('تم حفظ ملف النص.');});
+/* محرك الفحص الجنائي المحلي: حاويات الملفات + metadata + مؤشرات LSB. */
+const KNOWN_PNG_CHUNKS = new Set(['IHDR','PLTE','IDAT','IEND','tEXt','zTXt','iTXt','eXIf','iCCP','sRGB','gAMA','cHRM','pHYs','tIME','tRNS','bKGD','hIST','sPLT','sBIT','acTL','fcTL','fdAT','cICP','mDCV']);
+const FILE_SIGNATURES = [
+  {name:'ZIP archive', bytes:[0x50,0x4b,0x03,0x04]}, {name:'GZIP stream',bytes:[0x1f,0x8b,0x08]},
+  {name:'RAR archive',bytes:[0x52,0x61,0x72,0x21,0x1a,0x07]}, {name:'7z archive',bytes:[0x37,0x7a,0xbc,0xaf,0x27,0x1c]},
+  {name:'PDF document',bytes:[0x25,0x50,0x44,0x46,0x2d]}, {name:'SQLite database',bytes:[0x53,0x51,0x4c,0x69,0x74,0x65,0x20,0x66,0x6f,0x72,0x6d,0x61,0x74,0x20,0x33,0x00]},
+  {name:'Sitr V2 marker',bytes:[0x53,0x49,0x54,0x52]}, {name:'Sitr V1 marker',bytes:[0x53,0x41,0x4e,0x41]}
+];
+function scanAscii(bytes,start=0,length=bytes.length-start){let out='';const end=Math.min(bytes.length,start+length);for(let i=start;i<end;i++)out+=String.fromCharCode(bytes[i]);return out;}
+function scanLatin1(bytes,start=0,length=bytes.length-start){return scanAscii(bytes,start,length).replace(/\0/g,'␀').replace(/[\x01-\x08\x0b\x0c\x0e-\x1f\x7f]/g,'·');}
+function scanUtf8(bytes,max=1800){let text=new TextDecoder('utf-8',{fatal:false}).decode(bytes.slice(0,max));return text.replace(/\0/g,'␀').replace(/[\x01-\x08\x0b\x0c\x0e-\x1f]/g,'·').trim();}
+function scanHex(bytes,max=64){return [...bytes.slice(0,max)].map(byte=>byte.toString(16).padStart(2,'0')).join(' ') + (bytes.length>max?' …':'');}
+function scanSafeText(bytes,max=1500){const text=scanUtf8(bytes,max);const visible=[...text].filter(ch=>ch>=' '||ch==='\n'||ch==='\t').length;return text&&visible/Math.max(1,text.length)>.72?text:('[binary] '+scanHex(bytes,72));}
+function scanFindNull(bytes,start,end){for(let i=start;i<end;i++)if(bytes[i]===0)return i;return -1;}
+function scanU32BE(bytes,pos){return (bytes[pos]*0x1000000)+(bytes[pos+1]<<16)+(bytes[pos+2]<<8)+bytes[pos+3];}
+function scanU32LE(bytes,pos){return bytes[pos]+(bytes[pos+1]<<8)+(bytes[pos+2]<<16)+(bytes[pos+3]*0x1000000);}
+function scanByteEquals(bytes,at,needle){if(at<0||at+needle.length>bytes.length)return false;for(let i=0;i<needle.length;i++)if(bytes[at+i]!==needle[i])return false;return true;}
+function scanIndexOf(bytes,needle,start=0,end=bytes.length){const stop=Math.min(end,bytes.length)-needle.length;for(let i=Math.max(0,start);i<=stop;i++){let found=true;for(let j=0;j<needle.length;j++)if(bytes[i+j]!==needle[j]){found=false;break;}if(found)return i;}return -1;}
+function scanFormat(bytes){
+  if(scanByteEquals(bytes,0,[137,80,78,71,13,10,26,10]))return 'PNG';
+  if(scanByteEquals(bytes,0,[255,216,255]))return 'JPEG';
+  if(scanAscii(bytes,0,6)==='GIF87a'||scanAscii(bytes,0,6)==='GIF89a')return 'GIF';
+  if(scanAscii(bytes,0,4)==='RIFF'&&scanAscii(bytes,8,4)==='WEBP')return 'WebP';
+  if(scanAscii(bytes,0,2)==='BM')return 'BMP';
+  if((scanAscii(bytes,0,2)==='II'||scanAscii(bytes,0,2)==='MM')&&(bytes[2]===42||bytes[3]===42))return 'TIFF';
+  return 'غير معروف';
+}
+function scanShort(s,max=170){return s.length>max?s.slice(0,max)+'…':s;}
+async function scanInflate(bytes){
+  if(typeof DecompressionStream==='undefined')return null;
+  try{return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate'))).arrayBuffer());}catch{return null;}
+}
+function parseTiffMetadata(raw,source='EXIF'){
+  let base=0;if(scanAscii(raw,0,6)==='Exif\0\0')base=6;
+  if(base+8>raw.length)return [{source,key:'EXIF',value:'كتلة EXIF مختصرة أو غير قابلة للتحليل'}];
+  const order=scanAscii(raw,base,2),little=order==='II';if(!little&&order!=='MM')return [{source,key:'EXIF',value:'لا يظهر رأس TIFF صالح'}];
+  const u16=(p)=>{if(p+2>raw.length)return null;return little?raw[p]|(raw[p+1]<<8):(raw[p]<<8)|raw[p+1];};
+  const u32=(p)=>{if(p+4>raw.length)return null;return little?scanU32LE(raw,p):scanU32BE(raw,p);};
+  if(u16(base+2)!==42)return [{source,key:'EXIF',value:'رأس TIFF غير معروف'}];
+  const typeSize={1:1,2:1,3:2,4:4,5:8,7:1,9:4,10:8};
+  const names={0x010e:'ImageDescription',0x010f:'Make',0x0110:'Model',0x0112:'Orientation',0x0131:'Software',0x0132:'DateTime',0x013b:'Artist',0x8298:'Copyright',0x8769:'ExifIFD',0x8825:'GPSIFD',0x9003:'DateTimeOriginal',0x9004:'DateTimeDigitized',0x829a:'ExposureTime',0x829d:'FNumber',0x8827:'ISO',0x920a:'FocalLength',0x0001:'GPSLatitudeRef',0x0002:'GPSLatitude',0x0003:'GPSLongitudeRef',0x0004:'GPSLongitude',0x0006:'GPSAltitude',0x001d:'GPSDateStamp'};
+  const output=[],visited=new Set();
+  function valueFor(pos,type,count){
+    const size=typeSize[type]||1,total=size*count;if(total>65536||pos<0||pos+total>raw.length)return '[قيمة خارج الحدود]';
+    const part=raw.slice(pos,pos+Math.min(total,2048));
+    if(type===2)return scanSafeText(part,700).replace(/␀.*$/,'');
+    if(type===3)return [...Array(Math.min(count,8))].map((_,i)=>u16(pos+i*2)).join(', ');
+    if(type===4||type===9)return [...Array(Math.min(count,8))].map((_,i)=>u32(pos+i*4)).join(', ');
+    if(type===5||type===10)return [...Array(Math.min(count,5))].map((_,i)=>{const a=u32(pos+i*8),b=u32(pos+i*8+4);return a!==null&&b?`${a}/${b}`:'?';}).join(', ');
+    return scanHex(part,32);
+  }
+  function readIfd(offset,group,depth=0){
+    if(depth>2||visited.has(offset))return;visited.add(offset);const pos=base+offset,count=u16(pos);if(count===null||count>256)return;
+    for(let i=0;i<count&&output.length<70;i++){
+      const e=pos+2+i*12;if(e+12>raw.length)break;const tag=u16(e),type=u16(e+2),n=u32(e+4),size=(typeSize[type]||1)*n;
+      if(tag===null||type===null||n===null)continue;const valuePos=size<=4?e+8:base+u32(e+8);const key=names[tag]||`Tag 0x${tag.toString(16).padStart(4,'0')}`;
+      if(tag===0x8769||tag===0x8825){const sub=u32(e+8);output.push({source,key,value:`IFD @ ${sub||0}`});if(sub)readIfd(sub,key,depth+1);}
+      else output.push({source,key:group==='IFD0'?key:`${group}.${key}`,value:scanShort(String(valueFor(valuePos,type,n)),400)});
+    }
+  }
+  const first=u32(base+4);if(first!==null)readIfd(first,'IFD0');
+  return output.length?output:[{source,key:'EXIF',value:'لم توجد وسوم TIFF مقروءة'}];
+}
+async function parsePng(bytes){
+  const report={format:'PNG',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};let pos=8;
+  while(pos+12<=bytes.length){
+    const length=scanU32BE(bytes,pos),type=scanAscii(bytes,pos+4,4),dataStart=pos+8,end=dataStart+length,finish=end+4;
+    if(length>bytes.length||finish>bytes.length){report.warnings.push(`كتلة PNG غير مكتملة عند الإزاحة ${pos}.`);break;}
+    const privateChunk=type.length===4&&type.charCodeAt(1)>=97&&type.charCodeAt(1)<=122;
+    report.chunks.push({type,size:length,offset:pos,unknown:!KNOWN_PNG_CHUNKS.has(type),private:privateChunk});const data=bytes.slice(dataStart,end);
+    if(type==='tEXt'){const nul=scanFindNull(data,0,data.length);if(nul>=0)report.metadata.push({source:'PNG tEXt',key:scanLatin1(data,0,nul),value:scanShort(scanLatin1(data,nul+1),1800)});}
+    if(type==='zTXt'){const nul=scanFindNull(data,0,data.length);if(nul>=0){const unpacked=await scanInflate(data.slice(nul+2));report.metadata.push({source:'PNG zTXt',key:scanLatin1(data,0,nul),value:unpacked?scanShort(scanSafeText(unpacked),1800):'[نص مضغوط؛ تعذر فتحه محلياً]'});}}
+    if(type==='iTXt'){
+      const a=scanFindNull(data,0,data.length);if(a>=0&&a+3<=data.length){const compressed=data[a+1]===1;const b=scanFindNull(data,a+3,data.length),c=b<0?-1:scanFindNull(data,b+1,data.length);if(b>=0&&c>=0){let value=data.slice(c+1);if(compressed)value=await scanInflate(value)||value;report.metadata.push({source:'PNG iTXt',key:scanLatin1(data,0,a),value:scanShort(scanSafeText(value),1800)});}}
+    }
+    if(type==='eXIf')report.metadata.push(...parseTiffMetadata(data,'PNG eXIf'));
+    if(type==='IEND'){report.endOffset=finish;break;}pos=finish;
+  }
+  if(report.endOffset!==null&&report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};
+  const privateUnknown=report.chunks.filter(x=>x.unknown||x.private);if(privateUnknown.length)report.warnings.push(`وُجدت ${privateUnknown.length} كتلة PNG غير قياسية أو خاصة.`);
+  return report;
+}
+function jpegMarkerName(marker){const names={0xd8:'SOI',0xd9:'EOI',0xda:'SOS',0xdb:'DQT',0xc0:'SOF0',0xc2:'SOF2',0xc4:'DHT',0xdd:'DRI',0xfe:'COM'};return names[marker]||(marker>=0xe0&&marker<=0xef?`APP${marker-0xe0}`:`Marker FF${marker.toString(16).toUpperCase()}`);}
+async function parseJpeg(bytes){
+  const report={format:'JPEG',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};let pos=2;
+  while(pos+1<bytes.length){
+    while(pos<bytes.length&&bytes[pos]!==0xff)pos++;if(pos+1>=bytes.length)break;while(pos<bytes.length&&bytes[pos]===0xff)pos++;const marker=bytes[pos++];
+    if(marker===0xd9){report.endOffset=pos;break;}if(marker===0x00||marker===0x01||(marker>=0xd0&&marker<=0xd7))continue;
+    if(pos+2>bytes.length){report.warnings.push('علامة JPEG مختصرة.');break;}const segmentLength=(bytes[pos]<<8)|bytes[pos+1],dataStart=pos+2,end=pos+segmentLength;
+    if(segmentLength<2||end>bytes.length){report.warnings.push(`قسم JPEG غير صالح قرب الإزاحة ${pos-2}.`);break;}
+    const type=jpegMarkerName(marker),data=bytes.slice(dataStart,end);report.chunks.push({type,size:data.length,offset:pos-2,unknown:false});
+    if(marker===0xfe)report.metadata.push({source:'JPEG COM',key:'Comment',value:scanShort(scanSafeText(data),1800)});
+    if(marker===0xe1){
+      if(scanAscii(data,0,6)==='Exif\0\0')report.metadata.push(...parseTiffMetadata(data,'JPEG EXIF'));
+      else if(scanAscii(data,0,29)==='http://ns.adobe.com/xap/1.0/\0')report.metadata.push({source:'JPEG XMP',key:'XMP',value:scanShort(scanSafeText(data.slice(29)),1800)});
+      else report.metadata.push({source:'JPEG APP1',key:'APP1 raw',value:scanShort(scanSafeText(data),500)});
+    }
+    if(marker===0xed&&scanAscii(data,0,13)==='Photoshop 3.0')report.metadata.push({source:'JPEG APP13',key:'Photoshop/IPTC',value:`كتلة IPTC/Photoshop بحجم ${formatBytes(data.length)}`});
+    if(marker===0xe2&&scanAscii(data,0,11)==='ICC_PROFILE')report.metadata.push({source:'JPEG APP2',key:'ICC profile',value:`ملف تعريف لوني بحجم ${formatBytes(data.length)}`});
+    if(marker===0xda){
+      let eoi=-1;for(let i=bytes.length-2;i>=end;i--)if(bytes[i]===0xff&&bytes[i+1]===0xd9){eoi=i;break;}
+      if(eoi>=0){report.chunks.push({type:'Entropy-coded image data',size:eoi-end,offset:end,unknown:false});report.endOffset=eoi+2;}else report.warnings.push('لم يُعثر على علامة EOI في JPEG.');break;
+    }pos=end;
+  }
+  if(report.endOffset!==null&&report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};
+  return report;
+}
+function parseWebp(bytes){
+  const report={format:'WebP',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};if(bytes.length<12)return report;
+  const declared=scanU32LE(bytes,4)+8;let pos=12;
+  while(pos+8<=bytes.length&&pos<declared){const type=scanAscii(bytes,pos,4),size=scanU32LE(bytes,pos+4),start=pos+8,end=start+size;if(end>bytes.length){report.warnings.push(`كتلة WebP غير مكتملة (${type}).`);break;}const data=bytes.slice(start,end);report.chunks.push({type,size,offset:pos,unknown:!['VP8 ','VP8L','VP8X','ALPH','ANIM','ANMF','ICCP','EXIF','XMP '].includes(type)});if(type==='XMP ')report.metadata.push({source:'WebP XMP',key:'XMP',value:scanShort(scanSafeText(data),1800)});if(type==='EXIF')report.metadata.push(...parseTiffMetadata(data,'WebP EXIF'));if(type==='ICCP')report.metadata.push({source:'WebP ICCP',key:'ICC profile',value:`ملف تعريف لوني بحجم ${formatBytes(size)}`});pos=end+(size%2);}
+  report.endOffset=Math.min(declared,bytes.length);if(declared!==bytes.length)report.warnings.push(`حجم RIFF المعلن ${formatBytes(declared)} مقابل حجم فعلي ${formatBytes(bytes.length)}.`);if(report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};return report;
+}
+function parseGif(bytes){
+  const report={format:'GIF',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};let comments=0;for(let i=0;i+2<bytes.length;i++){if(bytes[i]===0x21&&bytes[i+1]===0xfe){let p=i+2,text=[];while(p<bytes.length&&bytes[p]){const n=bytes[p++];if(p+n>bytes.length)break;text.push(...bytes.slice(p,p+n));p+=n;}comments++;report.metadata.push({source:'GIF Comment',key:`Comment ${comments}`,value:scanShort(scanSafeText(new Uint8Array(text)),1800)});}}const trailer=bytes.lastIndexOf(0x3b);if(trailer>=0){report.endOffset=trailer+1;if(report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};}report.chunks.push({type:'GIF stream',size:bytes.length,offset:0,unknown:false});return report;
+}
+function parseBmp(bytes){const declared=bytes.length>=6?scanU32LE(bytes,2):0;const report={format:'BMP',chunks:[{type:'BMP stream',size:bytes.length,offset:0,unknown:false}],metadata:[],warnings:[],tail:null,endOffset:declared||null};if(declared&&declared<bytes.length)report.tail={offset:declared,length:bytes.length-declared};if(declared&&declared!==bytes.length)report.warnings.push(`حجم BMP المعلن ${formatBytes(declared)} مقابل الحجم الفعلي ${formatBytes(bytes.length)}.`);return report;}
+function parseTiff(bytes){return {format:'TIFF',chunks:[{type:'TIFF stream',size:bytes.length,offset:0,unknown:false}],metadata:parseTiffMetadata(bytes,'TIFF'),warnings:[],tail:null,endOffset:bytes.length};}
+async function parseContainer(bytes){const format=scanFormat(bytes);if(format==='PNG')return parsePng(bytes);if(format==='JPEG')return parseJpeg(bytes);if(format==='WebP')return parseWebp(bytes);if(format==='GIF')return parseGif(bytes);if(format==='BMP')return parseBmp(bytes);if(format==='TIFF')return parseTiff(bytes);return {format,chunks:[],metadata:[],warnings:['تنسيق غير مدعوم للتفكيك الكامل؛ سيجري فحص البصمات والبيانات الخام فقط.'],tail:null,endOffset:null};}
+function findFileSignatures(bytes,tail){
+  const found=[],areas=[[0,Math.min(bytes.length,2*1024*1024)]];if(tail)areas.push([tail.offset,bytes.length]);
+  for(const sig of FILE_SIGNATURES){let positions=[];for(const [start,end] of areas){const at=scanIndexOf(bytes,sig.bytes,start,end);if(at>=0&&!positions.includes(at))positions.push(at);}for(const offset of positions)found.push({name:sig.name,offset,insideTail:tail?offset>=tail.offset:false});}
+  return found;
+}
+function scanPixelStats(imageData){
+  const data=imageData.data,channels=[new Uint32Array(256),new Uint32Array(256),new Uint32Array(256)],pixels=imageData.width*imageData.height,maxPixels=1500000,stride=Math.max(1,Math.ceil(pixels/maxPixels));let sampled=0;
+  for(let p=0;p<data.length;p+=4*stride){channels[0][data[p]]++;channels[1][data[p+1]]++;channels[2][data[p+2]]++;sampled++;}
+  const result=channels.map((hist,index)=>{let ones=0,chi=0,pairs=0;for(let i=0;i<256;i++)if(i&1)ones+=hist[i];for(let i=0;i<256;i+=2){const total=hist[i]+hist[i+1];if(total){const expected=total/2;chi+=((hist[i]-expected)**2+(hist[i+1]-expected)**2)/expected;pairs++;}}const p=ones/sampled,entropy=p===0||p===1?0:-(p*Math.log2(p)+(1-p)*Math.log2(1-p));return {channel:['R','G','B'][index],ones:p,entropy,chi,chiPerPair:pairs?chi/pairs:0};});
+  return {sampled,stride,channels:result};
+}
+function drawLsbPreview(imageData){
+  const limit=380,scale=Math.min(1,limit/Math.max(imageData.width,imageData.height)),width=Math.max(1,Math.round(imageData.width*scale)),height=Math.max(1,Math.round(imageData.height*scale)),canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d'),out=ctx.createImageData(width,height),src=imageData.data;
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){const sx=Math.min(imageData.width-1,Math.floor(x/scale)),sy=Math.min(imageData.height-1,Math.floor(y/scale)),a=(sy*imageData.width+sx)*4,b=(y*width+x)*4;out.data[b]=(src[a]&1)*255;out.data[b+1]=(src[a+1]&1)*255;out.data[b+2]=(src[a+2]&1)*255;out.data[b+3]=255;}
+  ctx.putImageData(out,0,0);return canvas.toDataURL('image/png');
+}
+function readPixelLsb(imageData,channels,depth,maxBytes=98304){
+  const bitsNeeded=maxBytes*8,out=new Uint8Array(maxBytes),mask=(1<<depth)-1,data=imageData.data;let bitAt=0;
+  for(let p=0;p<data.length&&bitAt<bitsNeeded;p+=4)for(const channel of channels){const group=data[p+channel]&mask;for(let q=0;q<depth&&bitAt<bitsNeeded;q++){if((group>>(depth-1-q))&1)out[Math.floor(bitAt/8)]|=1<<(7-(bitAt%8));bitAt++;}}
+  return out.slice(0,Math.ceil(bitAt/8));
+}
+function readableAsciiRuns(bytes,min=7,limit=5){
+  const runs=[];let start=-1;for(let i=0;i<=bytes.length;i++){const printable=i<bytes.length&&bytes[i]>=32&&bytes[i]<=126;if(printable&&start<0)start=i;if(!printable&&start>=0){if(i-start>=min)runs.push(scanAscii(bytes,start,Math.min(i-start,220)));start=-1;if(runs.length>=limit)break;}}
+  return runs.map(x=>scanShort(x,220));
+}
+function probePixelStreams(imageData){
+  const lines=[],candidates=[];
+  try{const own=locatePacket(imageData);if(own){lines.push(`✓ توقيع سِتر ${own.format==='v2'?'V2':'V1'} صالح: عمق ${own.depth} بت، ${own.encrypted?'الحمولة مشفّرة':'الحمولة غير مشفّرة'}${own.format==='v2'?(own.compressed?'، GZIP':'')+(own.scattered?'، موزعة':''):''}.`);candidates.push({kind:'sitr',value:own});}}
+  catch(error){lines.push(`! ظهر توقيع سِتر لكن الرأس غير صالح: ${error.message}`);}
+  const probes=[['RGB / 1-bit',[0,1,2],1],['RGB / 2-bit',[0,1,2],2],['R / 1-bit',[0],1],['G / 1-bit',[1],1],['B / 1-bit',[2],1]];
+  for(const [label,channels,depth] of probes){const bytes=readPixelLsb(imageData,channels,depth);const signatures=findFileSignatures(bytes,null).filter(x=>x.offset<4096&&x.name!=='Sitr V1 marker'&&x.name!=='Sitr V2 marker');const strings=readableAsciiRuns(bytes);if(signatures.length||strings.length){lines.push(`• ${label}: ${signatures.map(x=>`${x.name} @${x.offset}`).join(', ')}${signatures.length&&strings.length?' | ':''}${strings.length?`نص: “${strings.join('” · “')}”`:''}`);candidates.push({kind:'stream',label,signatures,strings});}}
+  if(!lines.length)lines.push('لم يظهر توقيع معروف أو مسار نصي واضح ضمن مسارات LSB الشائعة التي فُحصت.');
+  return {lines,candidates};
+}
+function finding(level,title,detail){return {level,title,detail};}
+function buildScanFindings(report,signatures,pixels,probes,imageDecoded){
+  const findings=[];if(report.tail&&report.tail.length)findings.push(finding('high','بيانات بعد نهاية الحاوية',`يوجد ${formatBytes(report.tail.length)} بعد نهاية ملف ${report.format} المعلنة عند الإزاحة ${report.tail.offset}.`));
+  for(const sig of signatures.filter(x=>x.insideTail))findings.push(finding('high','بصمة حمولة داخل البيانات اللاحقة',`${sig.name} عند الإزاحة ${sig.offset}. قد يشير ذلك إلى ملف مضاف أو سلسلة بيانات.`));
+  const unusual=report.chunks.filter(x=>x.unknown||x.private);if(unusual.length)findings.push(finding('medium','كتل غير معيارية أو خاصة',`عُثر على ${unusual.length} كتلة؛ راجع أسماءها وحجومها في بنية الحاوية.`));
+  if(report.metadata.length)findings.push(finding('low','Metadata قابلة للعرض',`عُثر على ${report.metadata.length} حقل/كتلة نصية أو وصفية. قد تتضمن معلومات خصوصية مثل البرنامج أو الموقع أو التعليقات.`));
+  if(probes.candidates.some(x=>x.kind==='sitr'))findings.push(finding('high','تنسيق سِتر معروف',`عُثر على رأس متوافق مع سِتر؛ استخدم تبويب «استخراج نص» عند توفر كلمة المرور إذا كانت مشفّرة.`));
+  if(probes.candidates.some(x=>x.kind==='stream'))findings.push(finding('medium','مؤشرات من مسارات LSB شائعة',`ظهرت بصمات أو سلاسل قابلة للقراءة في مسار بكسلي شائع. تحقق يدوياً؛ قد تكون نتيجة عرضية.`));
+  if(pixels){const balanced=pixels.channels.filter(x=>Math.abs(x.ones-.5)<.006&&x.entropy>.9998&&x.chiPerPair<.72);if(balanced.length>=2)findings.push(finding('low','توازن LSB مرتفع',`قنوات ${balanced.map(x=>x.channel).join(' و')} قريبة جداً من التوزيع المتساوي. هذا مؤشر إحصائي ضعيف وحده وليس إثباتاً.`));if(!imageDecoded)findings.push(finding('low','فحص بكسلي محدود','تعذر فك ترميز الصورة في المتصفح؛ اقتصر التقرير على بنية الملف الخام.'));}
+  if(!findings.length)findings.push(finding('low','لا توجد مؤشرات صريحة ضمن الفحوصات المنفذة','لم يظهر tail أو metadata نصية أو توقيع معروف. لا يستبعد ذلك وجود إخفاء تحويلي أو مشفر أو معتمد على مفتاح.'));
+  return findings;
+}
+function formatMetadata(report){if(!report.metadata.length)return 'لا توجد حقول Metadata نصية أو EXIF قابلة للعرض ضمن المحلل الحالي.';return report.metadata.slice(0,100).map(item=>`[${item.source}]\n${item.key}: ${item.value}`).join('\n\n')+(report.metadata.length>100?`\n\n… تم اختصار ${report.metadata.length-100} حقلاً إضافياً.`:'');}
+function formatContainer(report,signatures){const lines=[];lines.push(`الصيغة: ${report.format}`);if(report.chunks.length){lines.push(`الأقسام (${report.chunks.length}):`);for(const item of report.chunks.slice(0,130))lines.push(`  ${item.offset.toString().padStart(8)}  ${item.type.padEnd(20)} ${formatBytes(item.size)}${item.unknown?'  [غير معروف]':''}${item.private?'  [خاص]':''}`);if(report.chunks.length>130)lines.push(`  … ${report.chunks.length-130} قسم إضافي`);}if(report.tail)lines.push(`\nبيانات لاحقة: ${formatBytes(report.tail.length)} عند offset ${report.tail.offset}`);if(signatures.length)lines.push(`\nالبصمات: ${signatures.map(x=>`${x.name} @${x.offset}${x.insideTail?' (tail)':''}`).join(' · ')}`);if(report.warnings.length)lines.push(`\nملاحظات: ${report.warnings.join(' | ')}`);return lines.join('\n');}
+function formatPixels(stats,probes,imageDecoded){if(!imageDecoded)return 'تعذر فك ترميز البكسلات في هذا المتصفح، لذلك لم يجر تحليل LSB.';const lines=[`عينة التحليل: ${stats.sampled.toLocaleString('ar')} بكسل${stats.stride>1?` (كل ${stats.stride} بكسل)`:''}.`,`قياس χ²/زوج يصف تقارب الأزواج اللونية، وليس احتمالاً مؤكداً للإخفاء.`,''];for(const c of stats.channels)lines.push(`${c.channel}: LSB=1 ${(c.ones*100).toFixed(3)}% | entropy ${c.entropy.toFixed(5)} bit | χ² ${c.chi.toFixed(1)} | χ²/زوج ${c.chiPerPair.toFixed(3)}`);return lines.join('\n');}
+function formatProbes(probes){return probes.lines.join('\n\n')+'\n\nالنطاق: تُفحص بدايات مسارات RGB وR وG وB حتى 96 ك.ب لكل مسار. لا يشمل ذلك أساليب DCT/JPEG أو البيانات الموزعة بمفتاح مجهول.';}
+function renderScan(report,signatures,stats,probes,imageDecoded){
+  const findings=buildScanFindings(report,signatures,stats,probes,imageDecoded),high=findings.filter(x=>x.level==='high').length,medium=findings.filter(x=>x.level==='medium').length;
+  $('scanResultCard').classList.remove('hidden');$('scanKpiFormat').textContent=report.format;$('scanKpiChunks').textContent=report.chunks.length.toLocaleString('ar');$('scanKpiMetadata').textContent=report.metadata.length.toLocaleString('ar');$('scanKpiTail').textContent=report.tail?formatBytes(report.tail.length):'لا';
+  const chip=$('scanChip');chip.className='status-chip '+(high?'error':medium?'warning':'');chip.textContent=high?'مؤشرات قوية':medium?'تحتاج مراجعة':'لا مؤشرات صريحة';$('scanTitle').textContent=high?'عُثر على بيانات أو بصمات تستحق الفحص':'تقرير الفحص الجنائي المحلي';$('scanDescription').textContent=`فُحص ${formatBytes(state.scan.bytes.length)} من ملف ${state.scan.file.name}. ${imageDecoded?'شمل ذلك البنية الخام وتحليل البكسلات.':'شمل ذلك البنية الخام؛ فحص البكسلات غير متاح لهذا الترميز.'}`;$('scanMeta').textContent=`${high+medium} مؤشر قوي/متوسط · ${report.metadata.length} حقل Metadata`;
+  const findingsEl=$('scanFindings');findingsEl.textContent='';for(const item of findings){const div=document.createElement('div');div.className=`finding ${item.level}`;const title=document.createElement('b');title.textContent=item.title;div.append(title,document.createTextNode(item.detail));findingsEl.append(div);}
+  $('scanMetadataOutput').textContent=formatMetadata(report);$('scanContainerOutput').textContent=formatContainer(report,signatures);$('scanPixelOutput').textContent=formatPixels(stats,probes,imageDecoded);$('scanProbeOutput').textContent=formatProbes(probes);
+  const preview=$('scanPlanePreview');if(imageDecoded){preview.src=drawLsbPreview(canvasPixels(state.scan.image).data);preview.classList.remove('hidden');}else{preview.removeAttribute('src');preview.classList.add('hidden');}
+  state.lastScan={generatedAt:new Date().toISOString(),file:{name:state.scan.file.name,size:state.scan.bytes.length,type:state.scan.file.type||null},format:report.format,findings,metadata:report.metadata,chunks:report.chunks,tail:report.tail,signatures,pixelStats:stats,probes:probes.candidates};
+}
+async function chooseScan(file){
+  try{if(!file)throw new Error('اختر ملف صورة صالحاً.');if(file.size>150*1024*1024)throw new Error('الملف أكبر من حد الفحص المحلي البالغ 150 م.ب.');const bytes=new Uint8Array(await file.arrayBuffer());let image=null;try{image=await loadImage(file);}catch{}state.scan.file=file;state.scan.bytes=bytes;state.scan.image=image;if(state.scan.objectUrl)URL.revokeObjectURL(state.scan.objectUrl);state.scan.objectUrl=URL.createObjectURL(file);$('scanThumb').src=state.scan.objectUrl;$('scanFileName').textContent=file.name;$('scanFileMeta').textContent=`${scanFormat(bytes)} · ${formatBytes(file.size)}${image?` · ${image.naturalWidth} × ${image.naturalHeight} بكسل`:' · تحليل الحاوية فقط'}`;$('scanImageInfo').classList.remove('hidden');$('scanButton').disabled=false;$('scanResultCard').classList.add('hidden');setAlert('scanAlert');}
+  catch(error){setAlert('scanAlert',error.message||'تعذر قراءة الملف.');}
+}
+attachDrop('scanDrop','scanFile',chooseScan);$('scanReplace').addEventListener('click',()=>$('scanFile').click());$('scanClear').addEventListener('click',()=>{if(state.scan.objectUrl)URL.revokeObjectURL(state.scan.objectUrl);state.scan={image:null,file:null,bytes:null,objectUrl:null};$('scanFile').value='';$('scanImageInfo').classList.add('hidden');$('scanResultCard').classList.add('hidden');$('scanButton').disabled=true;});
+$('scanButton').addEventListener('click',async()=>{
+  const button=$('scanButton');if(!state.scan.file||!state.scan.bytes)return;setAlert('scanAlert');$('scanResultCard').classList.add('hidden');
+  try{setWorking(button,true,'يفكك ويحلل…');await new Promise(resolve=>setTimeout(resolve,10));const report=await parseContainer(state.scan.bytes),signatures=findFileSignatures(state.scan.bytes,report.tail);let stats=null,probes={lines:['تعذر فك ترميز البكسلات في المتصفح.'],candidates:[]},decoded=false;if(state.scan.image){const pixels=canvasPixels(state.scan.image).data;stats=scanPixelStats(pixels);probes=probePixelStreams(pixels);decoded=true;}renderScan(report,signatures,stats,probes,decoded);showToast('اكتمل الفحص المحلي.');}
+  catch(error){setAlert('scanAlert',error.message||'حدث خطأ أثناء الفحص.');}
+  finally{setWorking(button,false);}
+});
+$('copyScanButton').addEventListener('click',async()=>{if(!state.lastScan)return;const summary=`سِتر — تقرير فحص\nالملف: ${state.lastScan.file.name}\nالصيغة: ${state.lastScan.format}\nالمؤشرات:\n${state.lastScan.findings.map(x=>`- ${x.title}: ${x.detail}`).join('\n')}`;try{await navigator.clipboard.writeText(summary);showToast('تم نسخ ملخص التقرير.');}catch{showToast('تعذر الوصول للحافظة.');}});
+$('saveScanButton').addEventListener('click',()=>{if(!state.lastScan)return;const blob=new Blob([JSON.stringify(state.lastScan,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='sitr-forensic-report.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('تم تنزيل تقرير JSON.');});
+
 updateEmbedCapacity();
 
   </script>
