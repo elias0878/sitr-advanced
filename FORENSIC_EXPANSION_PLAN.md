@@ -25,7 +25,7 @@
 | 17 | فحص دفاعي للحمولات | ClamAV وYARA محلياً وقواعد يتحكم بها المستخدم | مكتمل |
 | 18 | تقرير أدلة موحد | JSON يضم المصدر، offset، النوع، والمستوى وحدود النتيجة | مكتمل |
 | 19 | اختبار fixtures | ZIP/Deflate/PDF/ID3/WAVE/ICC/C2PA/thumbnail وموضع وسط الملف | مكتمل |
-| 20 | تدقيق، commit، نشر، والتحقق من alias | syntax + runner + production HTTP/DOM checks | قيد التنفيذ |
+| 20 | تدقيق، commit، نشر، والتحقق من alias | syntax + runner + production HTTP/DOM checks | مكتمل |
 
 ## مصفوفة التغطية والنتيجة الصادقة
 
