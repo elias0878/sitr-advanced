@@ -36,6 +36,32 @@ from typing import Any, Iterable
 
 MAX_CAPTURE = 1_500_000
 MAX_RAW_SCAN = 16 * 1024 * 1024
+RAW_SIGNATURES: dict[bytes, str] = {
+    b"PK\x03\x04": "ZIP archive",
+    b"\x1f\x8b\x08": "GZIP stream",
+    b"Rar!\x1a\x07": "RAR archive",
+    b"7z\xbc\xaf\x27\x1c": "7z archive",
+    b"%PDF-": "PDF document",
+    b"SQLite format 3\x00": "SQLite database",
+    b"\x89PNG\r\n\x1a\n": "PNG image candidate",
+    b"\xff\xd8\xff": "JPEG image candidate",
+    b"GIF8": "GIF image candidate",
+    b"II*\x00": "TIFF image candidate",
+    b"MM\x00*": "TIFF image candidate",
+    b"MZ": "Windows executable candidate (MZ)",
+    b"\x7fELF": "ELF executable candidate",
+    b"dex\n": "Android DEX candidate",
+    b"\x00asm": "WebAssembly candidate",
+    b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1": "OLE document container",
+    b"ID3": "MP3 audio candidate",
+    b"WAVE": "WAVE identifier",
+    b"jumb": "C2PA/JUMBF marker",
+    b"JUMBF": "C2PA/JUMBF marker",
+    b"c2pa": "C2PA claim marker",
+    b"C2PA": "C2PA claim marker",
+    b"SITR": "Sitr V2 marker",
+    b"SANA": "Sitr V1 marker",
+}
 
 
 def run(
@@ -98,30 +124,9 @@ def shannon_entropy(blob: bytes, limit: int = 4 * 1024 * 1024) -> float:
 
 
 def raw_signatures(blob: bytes, offset_base: int = 0) -> list[dict[str, Any]]:
-    signatures = {
-        b"PK\x03\x04": "ZIP archive",
-        b"\x1f\x8b\x08": "GZIP stream",
-        b"Rar!\x1a\x07": "RAR archive",
-        b"7z\xbc\xaf\x27\x1c": "7z archive",
-        b"%PDF-": "PDF document",
-        b"SQLite format 3\x00": "SQLite database",
-        b"MZ": "Windows executable candidate (MZ)",
-        b"\x7fELF": "ELF executable candidate",
-        b"dex\n": "Android DEX candidate",
-        b"\x00asm": "WebAssembly candidate",
-        b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1": "OLE document container",
-        b"ID3": "MP3 audio candidate",
-        b"WAVE": "WAVE identifier",
-        b"jumb": "C2PA/JUMBF marker",
-        b"JUMBF": "C2PA/JUMBF marker",
-        b"c2pa": "C2PA claim marker",
-        b"C2PA": "C2PA claim marker",
-        b"SITR": "Sitr V2 marker",
-        b"SANA": "Sitr V1 marker",
-    }
     found: list[dict[str, Any]] = []
     seen: set[tuple[str, int]] = set()
-    for marker, name in signatures.items():
+    for marker, name in RAW_SIGNATURES.items():
         cursor = 0
         for _ in range(8):
             pos = blob.find(marker, cursor)
@@ -136,39 +141,56 @@ def raw_signatures(blob: bytes, offset_base: int = 0) -> list[dict[str, Any]]:
     return found
 
 
+def scan_file_signatures(path: Path, size: int) -> list[dict[str, Any]]:
+    """يمسح كامل الملف على دفعات مع تداخل قصير، من دون تحميله كله في الذاكرة."""
+    block_size = 4 * 1024 * 1024
+    overlap_size = max(len(marker) for marker in RAW_SIGNATURES) - 1
+    found: dict[tuple[str, int], dict[str, Any]] = {}
+    counts: dict[str, int] = {}
+    offset = 0
+    overlap = b""
+    with path.open("rb") as handle:
+        while block := handle.read(block_size):
+            data = overlap + block
+            data_offset = offset - len(overlap)
+            for item in raw_signatures(data, data_offset):
+                name = str(item["name"])
+                key = (name, int(item["offset"]))
+                if key not in found and counts.get(name, 0) < 8:
+                    found[key] = item
+                    counts[name] = counts.get(name, 0) + 1
+            overlap = data[-overlap_size:]
+            offset += len(block)
+    return sorted(found.values(), key=lambda item: (item["offset"], item["name"]))
+
+
 def file_identity(path: Path) -> dict[str, Any]:
     size = path.stat().st_size
     digest = hashlib.sha256()
+    entropy_sample = bytearray()
+    magic = b""
     with path.open("rb") as handle:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
+            if not magic:
+                magic = block[:24]
+            if len(entropy_sample) < 4 * 1024 * 1024:
+                entropy_sample.extend(block[: 4 * 1024 * 1024 - len(entropy_sample)])
             digest.update(block)
-    # لا نحمّل ملفاً بحجم مئات الميغابايت إلى الذاكرة: نقرأ مقدمة ونهاية محدودتين فقط.
-    with path.open("rb") as handle:
-        head = handle.read(min(size, MAX_RAW_SCAN))
-        tail = b""
-        tail_offset = 0
-        if size > MAX_RAW_SCAN:
-            tail_offset = max(0, size - MAX_RAW_SCAN)
-            handle.seek(tail_offset)
-            tail = handle.read(MAX_RAW_SCAN)
-    findings = raw_signatures(head)
-    if tail:
-        findings.extend(raw_signatures(tail, tail_offset))
-    dedup = {(item["name"], item["offset"]): item for item in findings}
-    entropy = shannon_entropy(head)
+    entropy = shannon_entropy(bytes(entropy_sample))
     return {
         "name": path.name,
         "bytes": size,
         "sha256": digest.hexdigest(),
-        "magic_hex": head[:24].hex(" "),
+        "magic_hex": magic.hex(" "),
         "raw_entropy_bits_per_byte": round(entropy, 6),
-        "entropy_sample_bytes": min(len(head), 4 * 1024 * 1024),
+        "entropy_sample_bytes": len(entropy_sample),
+        "signature_scan_scope": "full file, streamed in 4 MB blocks",
         "high_entropy_note": (
             "قد يكون الملف مضغوطاً أو مشفراً؛ الإنتروبيا ليست دليلاً على تشفير أو إخفاء."
             if entropy > 7.8
             else None
         ),
-        "signatures": sorted(dedup.values(), key=lambda item: (item["offset"], item["name"])),
+        "signatures": scan_file_signatures(path, size),
     }
 
 
@@ -218,6 +240,41 @@ def yara_module(path: Path, rules: Path | None) -> dict[str, Any]:
     return run([tool, "--no-warnings", str(rules), str(path)], timeout=180)
 
 
+def structure_modules(path: Path, suffix: str, signatures: set[str]) -> dict[str, dict[str, Any]]:
+    """فاحصات قراءة فقط للحاويات التي ظهرت بصماتها؛ لا تستخرج ملفات إلى القرص."""
+    modules: dict[str, dict[str, Any]] = {}
+    if suffix == ".png":
+        modules["pngcheck"] = run(["pngcheck", "-v", str(path)])
+    else:
+        modules["pngcheck"] = {"status": "skipped", "reason": "ليس PNG حسب الامتداد"}
+    if suffix in {".jpg", ".jpeg"}:
+        modules["jpeginfo"] = run(["jpeginfo", "-c", str(path)])
+    else:
+        modules["jpeginfo"] = {"status": "skipped", "reason": "ليس JPEG حسب الامتداد"}
+    if "PDF document" in signatures:
+        modules["pdfinfo"] = run(["pdfinfo", str(path)])
+    else:
+        modules["pdfinfo"] = {"status": "skipped", "reason": "لا توجد بصمة PDF"}
+    archive = bool({"ZIP archive", "RAR archive", "7z archive"} & signatures)
+    if archive:
+        modules["zipinfo"] = run(["zipinfo", "-l", str(path)])
+        seven_zip = available(("7z", "7zz"))
+        modules["7z_listing"] = run([seven_zip, "l", "-slt", str(path)], timeout=180) if seven_zip else {"status": "not_installed", "command": ["7z", "l", "-slt", str(path)]}
+    else:
+        modules["zipinfo"] = {"status": "skipped", "reason": "لا توجد بصمة أرشيف"}
+        modules["7z_listing"] = {"status": "skipped", "reason": "لا توجد بصمة أرشيف"}
+    if "OLE document container" in signatures:
+        modules["oleid"] = run(["oleid", str(path)])
+    else:
+        modules["oleid"] = {"status": "skipped", "reason": "لا توجد بصمة OLE"}
+    media = bool({"MP3 audio candidate", "WAVE identifier"} & signatures) or suffix in {".mp3", ".wav", ".webm", ".mp4", ".mov"}
+    if media:
+        modules["ffprobe"] = run(["ffprobe", "-v", "error", "-show_format", "-show_streams", "-of", "json", str(path)])
+    else:
+        modules["ffprobe"] = {"status": "skipped", "reason": "لا توجد بصمة وسائط صوتية/فيديو"}
+    return modules
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="مشغل سِتر للفحص الجنائي المحلي الموسع")
     parser.add_argument("image", type=Path, help="الصورة أو الملف المراد فحصه")
@@ -244,10 +301,12 @@ def main() -> int:
 
     rules = args.yara_rules.expanduser().resolve() if args.yara_rules else None
     minimum = "24" if args.full_strings else "120"
-    tools = ("exiftool", "zsteg", "stegdetect", "c2patool", "clamscan", "yara", "yara64", "steghide", "binwalk", "strings")
+    identity = file_identity(path)
+    signature_names = {str(item["name"]) for item in identity["signatures"]}
+    tools = ("exiftool", "zsteg", "stegdetect", "c2patool", "clamscan", "yara", "yara64", "steghide", "binwalk", "strings", "pngcheck", "jpeginfo", "pdfinfo", "zipinfo", "7z", "7zz", "oleid", "ffprobe")
     report: dict[str, Any] = {
         "tool": "Sitr Forensics Runner",
-        "version": "2.2",
+        "version": "2.3",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "offline_only": not args.allow_c2pa_network,
         "c2pa_network_policy": (
@@ -259,22 +318,25 @@ def main() -> int:
             "النتائج مؤشرية. لا يمكن فك تشفير أو إخفاء معتمد على مفتاح بدون المفتاح الصحيح. "
             "بصمات البرامج التنفيذية ليست حكماً بوجود برمجية ضارة؛ راجع ClamAV/YARA وسياق الملف."
         ),
-        "file": file_identity(path),
+        "file": identity,
         "tool_availability": {name: bool(shutil.which(name)) for name in tools},
         "modules": {},
     }
 
-    # ExifTool: EXIF/IPTC/XMP/ICC ووسوم غير معروفة، مع إخراج JSON فقط.
-    report["modules"]["exiftool"] = run(["exiftool", "-j", "-G1", "-a", "-u", str(path)])
-    # يقرأ النصوص الظاهرة من الملف الخام. لا ينفذ المحتوى ولا يفتحه كأرشيف.
-    report["modules"]["strings"] = run(["strings", "-a", "-n", minimum, str(path)])
+    suffix = path.suffix.lower()
+    # ExifTool: قراءة EXIF/IPTC/XMP/ICC والوسوم المضمنة بصورة أعمق، مع إخراج JSON فقط.
+    report["modules"]["exiftool"] = run(["exiftool", "-j", "-G1", "-a", "-u", "-ee3", "-api", "RequestAll=3", str(path)], timeout=180)
+    # سلاسل ASCII وUTF-16: قراءة فقط من الملف الخام، من دون تنفيذ أو استخراج تلقائي.
+    report["modules"]["strings_ascii"] = run(["strings", "-a", "-n", minimum, str(path)])
+    report["modules"]["strings_utf16le"] = run(["strings", "-a", "-e", "l", "-n", minimum, str(path)])
+    report["modules"]["strings_utf16be"] = run(["strings", "-a", "-e", "b", "-n", minimum, str(path)])
     # Binwalk للمؤشرات والبصمات فقط: لا نستخدم -e أو استخراجاً آلياً.
     report["modules"]["binwalk"] = run(["binwalk", str(path)])
+    report["modules"].update(structure_modules(path, suffix, signature_names))
     report["modules"]["c2pa"] = c2pa_module(path, args.allow_c2pa_network)
     report["modules"]["clamav"] = clamav_module(path, args.skip_clamav)
     report["modules"]["yara"] = yara_module(path, rules)
 
-    suffix = path.suffix.lower()
     if suffix in {".png", ".bmp"}:
         report["modules"]["zsteg"] = run(["zsteg", "-a", str(path)], timeout=180)
     else:
