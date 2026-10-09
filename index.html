@@ -273,8 +273,9 @@ function dataView(bytes){return new DataView(bytes.buffer,bytes.byteOffset,bytes
 function switchTab(mode) {
   const input=mode==='input'||mode==='embed'||mode==='robust', output=!input;
   // صفحتان فقط: الإدخال يجمع الإخفاء والبصمة، والإخراج يجمع الاسترداد والتحقيق.
-  const robustCard=$('robustExtractCard'), robustHost=$('robustOutputHost'), robustAside=$('robustInputAside');
-  if(output)robustHost.appendChild(robustCard);else robustAside.prepend(robustCard);
+  const robustCard=$('robustExtractCard'), robustHost=$('robustOutputHost');
+  // يبقى الاسترداد ضمن صفحة الإخراج مهما تبدلت الصفحة.
+  robustHost.appendChild(robustCard);
   $('embedPanel').classList.toggle('hidden',!input); $('robustPanel').classList.toggle('hidden',!input); $('extractPanel').classList.toggle('hidden',!output); robustHost.classList.toggle('hidden',!output); $('scanPanel').classList.toggle('hidden',!output);
   [['inputTab',input],['outputTab',output]].forEach(([id,active])=>{$(id).classList.toggle('active',active);$(id).setAttribute('aria-selected',active);});
   setAlert('embedAlert');setAlert('extractAlert');setAlert('robustAlert');setAlert('robustExtractAlert');setAlert('scanAlert');
