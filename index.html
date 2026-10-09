@@ -730,6 +730,7 @@ function advancedCoverage(bytes,report,imageData){
   lines.push('AI/deep learning: SteganoGAN, CNN, autoencoder, adversarial and generative methods need the corresponding model/checkpoint or a validated detector. No browser-only extractor can truthfully recover every such payload.');
   lines.push('Malware/Payloads: executable or document signatures are file-type candidates, never a malware verdict. Use ClamAV and trusted YARA rules in sitr_forensics.py for a defensive local assessment.');
   lines.push(['Coverage matrix — family | browser evidence | optional local verifier','Metadata / provenance | EXIF-IPTC-XMP-ICC-C2PA markers | ExifTool / c2patool','Container / carving | tail, chunks, full-file magic, ZIP/PDF/GZIP/media previews | file / binwalk / zipinfo / 7z / pdfinfo / ffprobe','Spatial LSB | channels, planes, alignment, text, χ²/PVD/BPCS/RS-style | zsteg / StegExpose / Aletheia','JPEG transform | APP/DQT/DHT/SOF structure and indicator context | stegdetect / Aletheia auto','Adaptive and AI | honest method/model-required classification | calibrated Aletheia/model only','Payload safety | type candidate only, no execution | ClamAV / trusted YARA / oleid'].join('\n'));
+  lines.push('Native deep engine: for full streamed carving, entropy windows, artifact hashes, ZIP/PDF/audio parsers, raw strings and Pillow pixel analysis, run locally: python3 sitr_forensics.py image.png --carve-dir carved');
   return lines;
 }
 

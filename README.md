@@ -35,7 +35,10 @@
 للتحقيق الأوسع على جهازك، يتضمن المستودع `sitr_forensics.py`، وهو مشغل محلي آمن يمسح بصمات الملفات عبر كامل الملف على دفعات، ويدمج النتائج ـ إن كانت الأدوات مثبتة ـ من `exiftool` و`zsteg` و`stegdetect` و`Aletheia` و`StegExpose` و`c2patool` و`ClamAV` و`YARA` و`steghide` و`binwalk` و`strings` و`pngcheck` و`jpeginfo` و`pdfinfo` و`zipinfo` و`7z` و`oleid` و`ffprobe` في تقرير JSON واحد. لا يستخدم شبكة، ولا يحدّث قواعد، ولا يجرب كلمات مرور، ولا ينفذ استخراجاً تلقائياً للملفات. تعمل YARA فقط عند تمرير مسار قواعد موثوقة تملكها. يظل `c2patool` معطلاً افتراضياً لأن بعض الإصدارات قد تجلب manifest بعيداً؛ لا تشغّله إلا بعد مراجعة الملف وسياسة الشبكة:
 
 ```bash
+# المحرك الأصلي v3: تحليل الحاوية، entropy windows، text carving، pixel statistics ونحت آمن اختياري
 python3 sitr_forensics.py image.png --out sitr-report.json
+# لحفظ نسخ من العناصر المحددة كـ .bin في مجلد صريح، من دون تنفيذها:
+python3 sitr_forensics.py sample.jpg --carve-dir ./carved --max-carve-mb 16
 python3 sitr_forensics.py sample.jpg --yara-rules ./trusted-rules.yar
 # فحص StegExpose اختياري من JAR محلي موثوق؛ لا ينشئ ملفات استخراج:
 python3 sitr_forensics.py image.png --stegexpose-jar ./StegExpose.jar

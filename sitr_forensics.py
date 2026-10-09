@@ -38,6 +38,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from sitr_deep_engine import analyze_deep
+
 MAX_CAPTURE = 1_500_000
 MAX_RAW_SCAN = 16 * 1024 * 1024
 RAW_SIGNATURES: dict[bytes, str] = {
@@ -338,6 +340,9 @@ def main() -> int:
     parser.add_argument("--full-strings", action="store_true", help="خفض حد strings من 120 إلى 24 حرفاً")
     parser.add_argument("--yara-rules", type=Path, help="مسار قواعد YARA موثوقة محلياً (اختياري)")
     parser.add_argument("--skip-clamav", action="store_true", help="تخطي ClamAV حتى لو كان مثبتاً")
+    parser.add_argument("--no-native-deep", action="store_true", help="تخطي المحرك الأصلي: نحت آمن، entropy، النصوص، الحاوية، وتحليل البكسلات")
+    parser.add_argument("--carve-dir", type=Path, help="مجلد اختياري لحفظ النسخ المنحوتة كـ .bin؛ لا تنفذ تلقائياً")
+    parser.add_argument("--max-carve-mb", type=int, default=16, help="حد نافذة كل عنصر منحوت بالميغابايت (1–64، الافتراضي 16)")
     parser.add_argument("--stegexpose-jar", type=Path, help="مسار StegExpose JAR محلي موثوق (اختياري، قراءة فقط)")
     parser.add_argument(
         "--allow-c2pa-network",
@@ -353,6 +358,9 @@ def main() -> int:
         parser.error("الملف أكبر من حد المشغل الآمن: 750 م.ب")
 
     rules = args.yara_rules.expanduser().resolve() if args.yara_rules else None
+    carve_dir = args.carve_dir.expanduser().resolve() if args.carve_dir else None
+    if not 1 <= args.max_carve_mb <= 64:
+        parser.error("--max-carve-mb يجب أن يكون بين 1 و64")
     stegexpose_jar = args.stegexpose_jar.expanduser().resolve() if args.stegexpose_jar else None
     minimum = "24" if args.full_strings else "120"
     identity = file_identity(path)
@@ -360,7 +368,7 @@ def main() -> int:
     tools = ("exiftool", "zsteg", "stegdetect", "aletheia.py", "aletheia", "c2patool", "clamscan", "yara", "yara64", "steghide", "binwalk", "strings", "file", "pngcheck", "jpeginfo", "pdfinfo", "zipinfo", "7z", "7zz", "oleid", "ffprobe", "java")
     report: dict[str, Any] = {
         "tool": "Sitr Forensics Runner",
-        "version": "2.5",
+        "version": "3.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "offline_only": not args.allow_c2pa_network,
         "c2pa_network_policy": (
@@ -376,6 +384,14 @@ def main() -> int:
         "tool_availability": {name: bool(shutil.which(name)) for name in tools},
         "modules": {},
     }
+
+    if args.no_native_deep:
+        report["native_deep"] = {"status": "skipped", "reason": "--no-native-deep"}
+    else:
+        try:
+            report["native_deep"] = analyze_deep(path, carve_dir=carve_dir, max_carve_bytes=args.max_carve_mb * 1024 * 1024)
+        except Exception as error:  # لا يمنع فشل محلل واحد بقية الأدوات الدفاعية.
+            report["native_deep"] = {"status": "error", "error": f"{type(error).__name__}: {error}"}
 
     suffix = path.suffix.lower()
     # ExifTool: قراءة EXIF/IPTC/XMP/ICC والوسوم المضمنة بصورة أعمق، مع إخراج JSON فقط.
@@ -422,6 +438,8 @@ def main() -> int:
     report["evidence_summary"] = {
         "signature_candidates": len(identity["signatures"]),
         "signature_scan_scope": identity["signature_scan_scope"],
+        "native_deep_status": report["native_deep"].get("status", "completed"),
+        "native_deep_artifacts": len(report["native_deep"].get("artifacts", [])) if isinstance(report["native_deep"], dict) else 0,
         "external_modules": {
             name: module.get("status", "nested")
             for name, module in report["modules"].items()

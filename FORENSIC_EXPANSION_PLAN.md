@@ -25,7 +25,7 @@
 | 17 | فحص دفاعي للحمولات | ClamAV وYARA محلياً وقواعد يتحكم بها المستخدم | مكتمل |
 | 18 | تقرير أدلة موحد | JSON يضم المصدر، offset، النوع، والمستوى وحدود النتيجة | مكتمل |
 | 19 | اختبار fixtures | ZIP/Deflate/PDF/ID3/WAVE/ICC/C2PA/thumbnail وموضع وسط الملف | مكتمل |
-| 20 | تدقيق، commit، نشر، والتحقق من alias | syntax + runner + production HTTP/DOM checks | مكتمل |
+| 20 | تدقيق، commit، نشر، والتحقق من alias | syntax + runner + production HTTP/DOM checks | قيد التنفيذ |
 
 ## مصفوفة التغطية والنتيجة الصادقة
 
@@ -64,3 +64,31 @@
 5. **External-verifier result**: ناتج أداة محلية موثق باسم الأداة والإصدار والأمر والـ return code.
 
 لا تظهر كلمة «مؤكد» إلا مع استرداد صالح أو تحقق تشفيري من أداة مختصة.
+
+## محرك المعالجة الحقيقية المحلي v3
+
+لا يستطيع موقع static على Vercel تشغيل ExifTool أو Aletheia أو ClamAV على ملف المستخدم من دون رفعه إلى خادم، لذلك تنفذ المعالجة الثقيلة محلياً في `sitr_forensics.py` عبر `sitr_deep_engine.py`.
+
+| مرحلة المحرك | التنفيذ الفعلي | حد الأمان |
+|---|---|---|
+| فحص البصمات | قراءة متدفقة لكل الملف بكتل 1 MB مع تداخل الحدود | حتى 8 مواضع لكل نوع لتفادي التقرير المضلل |
+| خريطة الحاوية | PNG CRC حتى 16 MB لكل chunk، JPEG markers، WebP declared size، tail | لا تحميل chunk ضخم كاملاً في الذاكرة |
+| entropy | 32 نافذة موزعة من الملف، 64 KB للنافذة | نتائج entropy دليل ضغط/تشفير محتمل فقط |
+| نحت artifact | JPEG/PNG/GIF/PDF/ZIP boundaries، SHA-256 لكل ناتج | نافذة 1–64 MB؛ الحفظ يتطلب `--carve-dir` صراحةً |
+| ملفات مركبة | ZIP central directory، PDF objects، ID3، RIFF/WAVE، PE/ELF/DEX/WASM | لا فك مفاتيح ولا تنفيذ أو فتح الناتج |
+| text carving | ASCII وUTF-16 على دفعات | حد 48 نتيجة لكل encoding |
+| بكسلات | Pillow RGBA، streams متعددة، χ²/PVD/BPCS/RS-style | حد 12 مليون بكسل لحماية الذاكرة |
+| أدوات خارجية | ExifTool/zsteg/stegdetect/Aletheia/StegExpose/AV/YARA | timeout ومخرجات محدودة؛ لا brute-force |
+
+### أوامر آمنة نموذجية
+
+```bash
+# تقرير عميق محلي، بلا إنشاء ملفات إضافية
+python3 sitr_forensics.py suspect.png --out sitr-report.json
+
+# احفظ فقط النسخ المنحوتة ذات الحدود المعروفة كملفات .bin؛ لا يتم تنفيذها
+python3 sitr_forensics.py suspect.jpg --carve-dir ./carved --max-carve-mb 16
+
+# قواعد YARA موثوقة يتحكم بها المحقق
+python3 sitr_forensics.py suspect.jpg --yara-rules ./trusted-rules.yar
+```
