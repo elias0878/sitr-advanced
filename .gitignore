@@ -1,0 +1,15 @@
+# Deployment and local secrets
+.vercel/
+.env
+.env.*
+*.token
+*.key
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Local artifacts
+node_modules/
+coverage/

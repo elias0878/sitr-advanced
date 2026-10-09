@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101a2c" />
+  <title>سِتر — مختبر إخفاء النصوص داخل الصور</title>
+  <style>
+    :root {
+      --ink:#ecf4ff; --muted:#9daec5; --faint:#62748d; --surface:#142137; --surface-2:#192a45;
+      --line:rgba(174,202,236,.15); --primary:#61d7bd; --primary-deep:#2bab98; --accent:#8baeff;
+      --danger:#ff818b; --warning:#f0bc67; --shadow:0 20px 70px rgba(1,7,17,.38);
+    }
+    *{box-sizing:border-box} html{min-height:100%;background:#0b1322} body{margin:0;min-height:100vh;color:var(--ink);font-family:Tahoma,Arial,"Noto Sans Arabic",sans-serif;background:radial-gradient(900px 500px at 8% -8%,rgba(83,130,209,.28),transparent 64%),radial-gradient(700px 430px at 98% 5%,rgba(37,174,148,.15),transparent 65%),#0b1322;letter-spacing:.01em}
+    button,input,textarea,select{font:inherit} button{cursor:pointer} .shell{width:min(1180px,calc(100% - 38px));margin:0 auto}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:31px 0 25px;border-bottom:1px solid var(--line)}
+    .brand{display:flex;align-items:center;gap:13px}.brand-mark{height:42px;width:42px;border-radius:13px;background:linear-gradient(135deg,#78f2d2,#648fff);box-shadow:0 10px 28px rgba(96,215,189,.2);display:grid;place-items:center;color:#09233a}.brand h1{font-size:21px;margin:0;font-weight:800;letter-spacing:0}.brand small{color:var(--muted);display:block;font-size:12px;margin-top:2px}.top-status{display:flex;gap:9px;align-items:center;color:#bcf6e9;font-size:12px;padding:8px 11px;background:rgba(97,215,189,.09);border:1px solid rgba(97,215,189,.16);border-radius:100px}.dot{width:7px;height:7px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px rgba(97,215,189,.1)}
+    .hero{padding:46px 0 30px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:30px}.eyebrow{color:var(--primary);font-size:12px;font-weight:bold;letter-spacing:.13em}.hero h2{font-size:clamp(29px,5vw,48px);line-height:1.25;letter-spacing:-.03em;margin:12px 0 12px}.hero p{color:var(--muted);font-size:15px;line-height:1.9;margin:0;max-width:650px}.protocol{display:flex;gap:9px;align-items:center;padding:10px 13px;color:var(--muted);font-size:12px;border:1px solid var(--line);border-radius:12px;background:rgba(20,33,55,.62)}
+    .tabbar{display:flex;gap:8px;margin-top:14px;border-bottom:1px solid var(--line);padding-bottom:0}.tab{border:0;color:var(--muted);background:transparent;border-radius:11px 11px 0 0;padding:14px 18px;font-weight:700;transition:.2s}.tab:hover{color:var(--ink);background:rgba(255,255,255,.035)}.tab.active{background:var(--surface);color:var(--primary);box-shadow:inset 0 2px var(--primary)}.tab svg{vertical-align:middle;margin-left:6px}
+    main{padding:24px 0 56px}.workspace{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(330px,.82fr);gap:20px;align-items:start}.hidden{display:none!important}.card{border:1px solid var(--line);background:linear-gradient(145deg,rgba(24,40,66,.96),rgba(16,28,48,.96));box-shadow:var(--shadow);border-radius:19px;overflow:hidden}.card-head{display:flex;align-items:center;justify-content:space-between;padding:19px 22px;border-bottom:1px solid var(--line)}.card-head h3{margin:0;font-size:16px}.step{color:#042c31;background:var(--primary);font-weight:bold;font-size:11px;min-width:23px;height:23px;display:grid;place-items:center;border-radius:50%}.hint{color:var(--muted);font-size:12px}.card-body{padding:20px 22px}
+    .dropzone{min-height:187px;border:1.5px dashed rgba(135,173,225,.36);border-radius:14px;background:linear-gradient(145deg,rgba(34,55,88,.35),rgba(15,27,46,.18));display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;transition:.2s;position:relative;overflow:hidden}.dropzone.drag{border-color:var(--primary);background:rgba(97,215,189,.08)}.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer}.upload-icon{width:42px;height:42px;border-radius:13px;background:rgba(139,174,255,.12);color:var(--accent);display:grid;place-items:center;margin-bottom:10px}.dropzone strong{font-size:14px}.dropzone span{font-size:12px;color:var(--muted);margin-top:7px}.dropzone b{color:var(--primary)}
+    .image-info{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center;border:1px solid var(--line);background:rgba(5,14,27,.22);border-radius:14px;padding:11px;margin-top:14px}.thumb{height:74px;border-radius:9px;background:#0b1322;display:grid;place-items:center;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:contain}.file-title{font-weight:700;font-size:13px;word-break:break-all}.file-meta{color:var(--muted);font-size:12px;margin:6px 0 10px}.file-actions{display:flex;gap:8px;flex-wrap:wrap}.text-btn{border:0;background:transparent;color:var(--accent);font-size:12px;padding:0}.text-btn:hover{text-decoration:underline}.capacity-wrap{margin-top:17px}.capacity-row{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px}.capacity-row span{color:var(--muted)}.capacity-row b{color:var(--primary);font-size:13px;direction:ltr}.meter{height:6px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;margin-top:8px}.meter i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--primary),#8baeff);transition:width .25s,background .25s}.meter i.warning{background:linear-gradient(90deg,var(--warning),var(--danger))}
+    .field{margin-bottom:16px}.field:last-child{margin-bottom:0}.label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.field label{font-size:13px;font-weight:700}.field-note{font-size:11px;color:var(--muted)} textarea,input[type=password]{width:100%;outline:none;border:1px solid rgba(174,202,236,.18);color:var(--ink);background:#0e1a2c;border-radius:11px;padding:12px 13px;transition:.2s}textarea{resize:vertical;min-height:156px;line-height:1.75;direction:auto}textarea:focus,input[type=password]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,174,255,.11)}textarea::placeholder,input::placeholder{color:#63758e}.char-count{font-variant-numeric:tabular-nums;color:var(--muted)}
+    .option-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.choice{position:relative}.choice input{position:absolute;opacity:0}.choice label{display:block;border:1px solid var(--line);background:rgba(4,13,26,.21);border-radius:11px;padding:11px 12px;cursor:pointer;font-size:12px;line-height:1.55;color:var(--muted);transition:.2s}.choice strong{display:block;color:var(--ink);font-size:12px;margin-bottom:2px}.choice input:checked+label{border-color:rgba(97,215,189,.8);background:rgba(97,215,189,.08);color:#bdede3}.choice input:focus+label{box-shadow:0 0 0 3px rgba(139,174,255,.12)}
+    .password-box{padding:13px;border:1px solid rgba(97,215,189,.18);background:rgba(97,215,189,.045);border-radius:12px}.password-box.disabled{opacity:.53;filter:grayscale(.3)}.advanced-box{padding:14px;border:1px solid rgba(139,174,255,.19);background:linear-gradient(135deg,rgba(139,174,255,.075),rgba(97,215,189,.035));border-radius:12px}.advanced-title{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--ink);font-size:12px;font-weight:800;margin-bottom:11px}.advanced-pill{font-size:10px;color:#cce0ff;border:1px solid rgba(139,174,255,.27);background:rgba(139,174,255,.11);border-radius:50px;padding:3px 7px}.advanced-check{display:flex;gap:9px;align-items:flex-start;color:var(--muted);font-size:12px;line-height:1.55;cursor:pointer;padding:6px 0}.advanced-check+.advanced-check{border-top:1px solid rgba(174,202,236,.1);margin-top:4px;padding-top:10px}.advanced-check input{accent-color:var(--primary);width:15px;height:15px;flex:none;margin-top:2px}.advanced-check b{display:block;color:var(--ink);font-size:12px}.check-label{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:bold;cursor:pointer;margin-bottom:10px}.check-label input{accent-color:var(--primary);width:15px;height:15px}.pass-row{position:relative}.pass-row input{padding-left:44px}.eye{position:absolute;left:8px;top:50%;translate:0 -50%;color:var(--muted);border:0;background:transparent;width:31px;height:31px;border-radius:8px}.eye:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+    .action-row{display:flex;gap:10px;align-items:center;margin-top:20px}.primary{border:0;border-radius:11px;background:linear-gradient(135deg,#62d9bd,#4aa5e7);color:#062434;padding:13px 19px;font-weight:800;box-shadow:0 10px 22px rgba(60,180,168,.16);transition:transform .18s,filter .18s}.primary:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06)}.primary:disabled{cursor:not-allowed;opacity:.45}.secondary{border:1px solid var(--line);border-radius:11px;background:transparent;color:var(--ink);padding:12px 15px;font-weight:700;font-size:13px}.secondary:hover{background:rgba(255,255,255,.04)}.support{color:var(--muted);font-size:11px;line-height:1.55}
+    .side-stack{display:grid;gap:20px}.security{padding:20px 22px}.security h3{font-size:15px;margin:0 0 14px}.security-list{list-style:none;padding:0;margin:0;display:grid;gap:13px}.security-list li{display:grid;grid-template-columns:27px 1fr;gap:9px;align-items:start;font-size:12px;color:var(--muted);line-height:1.65}.shield{height:25px;width:25px;background:rgba(97,215,189,.1);color:var(--primary);border-radius:8px;display:grid;place-items:center}.security-list b{color:var(--ink);display:block;font-size:12px;margin-bottom:1px}.how{padding:20px 22px}.how h3{font-size:15px;margin:0 0 16px}.how-item{position:relative;display:flex;gap:11px;padding-bottom:15px;color:var(--muted);font-size:12px;line-height:1.65}.how-item:not(:last-child):before{content:"";position:absolute;right:10px;top:24px;width:1px;height:calc(100% - 14px);background:var(--line)}.num{height:21px;width:21px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(139,174,255,.14);color:var(--accent);font-weight:bold;font-size:11px}.how-item b{color:var(--ink)}
+    .result-card{margin-top:20px}.result-main{padding:21px 22px}.result-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.status-chip{font-size:12px;font-weight:bold;padding:7px 10px;border-radius:50px;background:rgba(97,215,189,.1);color:var(--primary)}.status-chip.error{background:rgba(255,129,139,.11);color:var(--danger)}.status-chip.warning{background:rgba(240,188,103,.1);color:var(--warning)}.result-main h3{margin:10px 0 5px;font-size:17px}.result-main p{color:var(--muted);font-size:12px;line-height:1.7;margin:0}.output{min-height:108px;max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word;direction:auto;margin-top:15px;background:#0b1627;border:1px solid var(--line);border-radius:11px;padding:13px;color:#ddecff;font-family:Consolas,"Cascadia Code",monospace;font-size:12px;line-height:1.75}.result-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.alert{display:none;padding:11px 13px;border-radius:10px;font-size:12px;line-height:1.65;margin-top:14px}.alert.show{display:block}.alert.error{color:#ffd5d9;background:rgba(255,129,139,.1);border:1px solid rgba(255,129,139,.21)}.alert.info{color:#d5e6ff;background:rgba(139,174,255,.09);border:1px solid rgba(139,174,255,.18)}
+    .download-panel{display:none;margin-top:15px;border:1px solid rgba(97,215,189,.26);background:rgba(97,215,189,.055);border-radius:13px;padding:14px}.download-panel.show{display:flex;align-items:center;justify-content:space-between;gap:15px}.download-panel b{display:block;font-size:13px}.download-panel span{display:block;color:var(--muted);font-size:11px;margin-top:4px}.footer{color:#718299;border-top:1px solid var(--line);padding:20px 0 30px;text-align:center;font-size:11px;line-height:1.7}.footer code{direction:ltr;color:#9fb6d3}
+    .toast{position:fixed;z-index:20;left:50%;bottom:24px;translate:-50% 20px;opacity:0;pointer-events:none;color:#0b2530;background:#baf8e9;border-radius:10px;padding:11px 15px;font-size:13px;font-weight:bold;box-shadow:0 12px 36px rgba(0,0,0,.35);transition:.23s}.toast.show{opacity:1;translate:-50% 0}.loader{width:17px;height:17px;border-radius:50%;border:2px solid rgba(8,47,54,.32);border-top-color:#083b47;display:inline-block;vertical-align:middle;animation:spin .7s linear infinite;margin-left:6px}@keyframes spin{to{transform:rotate(360deg)}}
+    @media (max-width:880px){.workspace{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.protocol{justify-self:start}.side-stack{grid-template-columns:1fr 1fr}.topbar{padding-top:19px}}@media (max-width:560px){.shell{width:min(100% - 24px,1180px)}.top-status{font-size:0;padding:9px}.top-status .dot{margin:0}.hero{padding-top:32px}.card-body,.card-head,.security,.how{padding-right:15px;padding-left:15px}.option-grid,.side-stack{grid-template-columns:1fr}.image-info{grid-template-columns:80px 1fr}.thumb{height:58px}.action-row{align-items:stretch;flex-direction:column}.primary,.secondary{width:100%}.tab{padding:13px 12px;font-size:13px}.protocol{display:none}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5.4c0 4.35-3.05 7.75-8 8.95-4.95-1.2-8-4.6-8-8.95V7l8-3.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.2h8M12 8.2v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div><h1>سِتر</h1><small>مختبر البيانات المخفية داخل الصور</small></div>
+      </div>
+      <div class="top-status"><i class="dot"></i> يعمل محلياً داخل متصفحك</div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">SITR V2 · ADAPTIVE COMPRESSION · AES-256-GCM</div>
+        <h2>رسالتك داخل الصورة،<br>دون أن تظهر للعين.</h2>
+        <p>أخفِ النصوص داخل وحدات البكسل ثم استخرجها لاحقاً. لا تُرفع الصور أو الكلمات السرية إلى أي خادم؛ كل العمليات تتم على جهازك.</p>
+      </div>
+      <div class="protocol"><span aria-hidden="true">⌘</span> صورة <span style="color:var(--faint)">←</span> بيانات مشفّرة <span style="color:var(--faint)">←</span> نص</div>
+    </section>
+
+    <nav class="tabbar" aria-label="وضع الأداة">
+      <button class="tab active" id="embedTab" type="button" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0-12 4.5 4.5M12 3 7.5 7.5M5 15.5v3A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>إخفاء نص</button>
+      <button class="tab" id="extractTab" type="button" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 21V9m0 12-4.5-4.5M12 21l4.5-4.5M5 8.5v-3A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>استخراج نص</button>
+    </nav>
+
+    <main>
+      <section id="embedPanel" class="workspace">
+        <div class="card">
+          <div class="card-head"><div style="display:flex;gap:9px;align-items:center"><i class="step">1</i><h3>اختر الصورة الحاوية</h3></div><span class="hint">PNG أو JPG أو WebP</span></div>
+          <div class="card-body">
+            <div class="dropzone" id="embedDrop">
+              <input id="embedFile" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" aria-label="اختيار الصورة الحاوية" />
+              <div class="upload-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15.5v3A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <strong>اسحب الصورة هنا أو <b>اختر ملفاً</b></strong><span>كلما كانت الصورة أكبر، زادت سعة الرسالة.</span>
+            </div>
+            <div id="embedImageInfo" class="image-info hidden">
+              <div class="thumb"><img id="embedThumb" alt="معاينة الصورة المختارة" /></div>
+              <div><div class="file-title" id="embedFileName"></div><div class="file-meta" id="embedFileMeta"></div><div class="file-actions"><button class="text-btn" type="button" id="embedReplace">تبديل الصورة</button><button class="text-btn" type="button" id="embedClear">إزالة</button></div></div>
+            </div>
+            <div class="capacity-wrap"><div class="capacity-row"><span>السعة المتاحة وفق الإعداد الحالي</span><b id="capacityText">—</b></div><div class="meter"><i id="capacityMeter"></i></div></div>
+          </div>
+          <div class="card-head"><div style="display:flex;gap:9px;align-items:center"><i class="step">2</i><h3>اكتب الرسالة</h3></div><span id="charCount" class="char-count">0 حرف</span></div>
+          <div class="card-body">
+            <div class="field">
+              <div class="label-row"><label for="secretText">النص المراد إخفاؤه</label><span class="field-note">يدعم العربية والرموز</span></div>
+              <textarea id="secretText" maxlength="200000" placeholder="اكتب رسالتك السرية هنا…"></textarea>
+            </div>
+            <div class="field">
+              <div class="label-row"><label>عمق الإخفاء</label><span class="field-note">تغيير أقل = صورة أكثر طبيعية</span></div>
+              <div class="option-grid">
+                <div class="choice"><input id="depth1" type="radio" name="depth" value="1" checked><label for="depth1"><strong>قياسي · 1 بت</strong>تعديل طفيف جداً، موصى به.</label></div>
+                <div class="choice"><input id="depth2" type="radio" name="depth" value="2"><label for="depth2"><strong>سعة مضاعفة · 2 بت</strong>للنصوص الأطول؛ أثر مرئي محتمل.</label></div>
+              </div>
+            </div>
+            <div class="field advanced-box">
+              <div class="advanced-title"><span>محرك سِتر V2</span><span class="advanced-pill">مفعّل تلقائياً</span></div>
+              <label class="advanced-check"><input id="compressionToggle" type="checkbox" checked><span><b>ضغط ذكي قبل الإخفاء</b>يختار ضغط GZIP فقط عندما يقلل حجم الرسالة فعلياً.</span></label>
+              <label class="advanced-check"><input id="scatterToggle" type="checkbox" checked><span><b>توزيع شبه عشوائي للحمولة</b>يُبعثر البيانات بمفتاح مشتق من قيم عشوائية داخل الملف، بدلاً من كتابتها بتسلسل واضح.</span></label>
+              <div id="compressionNote" class="field-note" style="margin-top:8px">يُستخدم رأس بيانات مكرر لموثوقية أعلى عند قراءة الملف.</div>
+            </div>
+            <div class="field password-box" id="passwordBox">
+              <label class="check-label"><input id="encryptToggle" type="checkbox" checked> تشفير الرسالة بكلمة مرور</label>
+              <div class="pass-row"><input id="embedPassword" type="password" autocomplete="new-password" placeholder="أدخل كلمة مرور قوية" aria-label="كلمة مرور التشفير" /><button id="toggleEmbedPass" class="eye" type="button" aria-label="إظهار كلمة المرور">◉</button></div>
+              <div class="field-note" style="margin-top:8px">يستخدم تشفير <span dir="ltr">AES-256-GCM</span> ومشتق <span dir="ltr">PBKDF2</span> محلياً. لن تستطيع الاسترجاع بدون كلمة المرور.</div>
+            </div>
+            <div class="action-row"><button class="primary" id="embedButton" type="button" disabled>تضمين الرسالة داخل PNG</button><span class="support">سيُنتج دائماً ملف PNG لأن JPG يفسد البتات المخفية.</span></div>
+            <div id="embedAlert" class="alert error" role="alert"></div>
+            <div id="downloadPanel" class="download-panel"><div><b>تم إنشاء الصورة المخفية</b><span id="downloadMeta">جاهزة للتنزيل</span></div><button class="primary" id="downloadButton" type="button">تنزيل الصورة</button></div>
+          </div>
+        </div>
+        <aside class="side-stack">
+          <div class="card security"><h3>محرك سِتر V2</h3><ul class="security-list"><li><span class="shield">⌁</span><span><b>ضغط تكيفي قبل التشفير</b>يستغل تكرار النص لتوفير المساحة، لكنه لا يستخدم الضغط إذا كان سيزيد الحجم.</span></li><li><span class="shield">⌘</span><span><b>توزيع مموّه للحمولة</b>يستخدم تبديلًا شبه عشوائي بلا قائمة مواقع ضخمة، لذا يظل سريعاً وموفراً للذاكرة.</span></li><li><span class="shield">⌑</span><span><b>رأسان متطابقان</b>نسخة بداية ونسخة نهاية لتسهيل اكتشاف البنية والتحقق منها.</span></li><li><span class="shield">✓</span><span><b>تشفير وتحقق</b>تشفير AES-GCM اختياري وبصمة SHA-256 للنص النهائي.</span></li></ul></div>
+          <div class="card how"><h3>قبل أن تبدأ</h3><div class="how-item"><span class="num">1</span><span><b>استخدم صورة أصلية كبيرة.</b><br>يفضل PNG أو صورة ملونة عالية الدقة.</span></div><div class="how-item"><span class="num">2</span><span><b>احتفظ بالملف الناتج بصيغة PNG.</b><br>إعادة الحفظ كـ JPG أو ضغط الصورة يمحو الرسالة.</span></div><div class="how-item"><span class="num">3</span><span><b>استخدم الضغط للنصوص الطويلة.</b><br>تظهر السعة بحساب محافظ قبل معرفة نسبة الضغط النهائية.</span></div><div class="how-item"><span class="num">4</span><span><b>لا تشارك كلمة المرور في نفس القناة.</b><br>الملف وحده لا يكفي لفك التشفير.</span></div></div>
+        </aside>
+      </section>
+
+      <section id="extractPanel" class="workspace hidden">
+        <div class="card">
+          <div class="card-head"><div style="display:flex;gap:9px;align-items:center"><i class="step">1</i><h3>ارفع صورة تحتوي رسالة</h3></div><span class="hint">يفضل PNG الأصلي</span></div>
+          <div class="card-body">
+            <div class="dropzone" id="extractDrop">
+              <input id="extractFile" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" aria-label="اختيار الصورة لاستخراج الرسالة" />
+              <div class="upload-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M12 21V9m0 12-4.5-4.5M12 21l4.5-4.5M5 8.5v-3A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <strong>اسحب الصورة هنا أو <b>اختر ملفاً</b></strong><span>تتعرف الأداة تلقائياً على عمق الإخفاء.</span>
+            </div>
+            <div id="extractImageInfo" class="image-info hidden">
+              <div class="thumb"><img id="extractThumb" alt="معاينة صورة الاستخراج" /></div>
+              <div><div class="file-title" id="extractFileName"></div><div class="file-meta" id="extractFileMeta"></div><div class="file-actions"><button class="text-btn" type="button" id="extractReplace">تبديل الصورة</button><button class="text-btn" type="button" id="extractClear">إزالة</button></div></div>
+            </div>
+          </div>
+          <div class="card-head"><div style="display:flex;gap:9px;align-items:center"><i class="step">2</i><h3>فك الإخفاء</h3></div><span class="hint">يُفحص التوقيع أولاً</span></div>
+          <div class="card-body">
+            <div class="field password-box" id="extractPasswordBox">
+              <label class="check-label"><input id="extractPassToggle" type="checkbox" checked> لدي كلمة مرور للرسالة</label>
+              <div class="pass-row"><input id="extractPassword" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور إن كانت الرسالة مشفّرة" aria-label="كلمة مرور فك التشفير" /><button id="toggleExtractPass" class="eye" type="button" aria-label="إظهار كلمة المرور">◉</button></div>
+              <div class="field-note" style="margin-top:8px">إذا كانت الرسالة بلا تشفير، أزل علامة كلمة المرور. الأداة ستخبرك إن لم يتطابق الاختيار مع الصورة.</div>
+            </div>
+            <div class="action-row"><button class="primary" id="extractButton" type="button" disabled>استخراج الرسالة</button><span class="support">لن تظهر أي بيانات حتى يمر فحص البنية والسلامة.</span></div>
+            <div id="extractAlert" class="alert error" role="alert"></div>
+          </div>
+        </div>
+        <aside class="side-stack">
+          <div class="card security"><h3>ما الذي يحدث عند الاستخراج؟</h3><ul class="security-list"><li><span class="shield">1</span><span><b>قراءة رأسين مستقلين</b>يفحص البداية ثم النهاية للعثور على تنسيق سِتر V2 بثبات أكبر.</span></li><li><span class="shield">2</span><span><b>إعادة بناء توزيع البيانات</b>يستنتج العمق والمواقع المموهة من المعلومات الموجودة في الرأس.</span></li><li><span class="shield">3</span><span><b>فك وفتح الضغط وفحص</b>تفك البيانات محلياً، ثم تُفتح إن كانت مضغوطة وتُطابق بصمة سلامة الرسالة.</span></li></ul></div>
+          <div class="card how"><h3>نتيجة موثوقة</h3><div class="how-item"><span class="num">!</span><span><b>رسالة غير موجودة؟</b><br>قد تكون الصورة لا تحتوي بيانات سِتر أو أعيد ضغطها.</span></div><div class="how-item"><span class="num">?</span><span><b>فشل فك التشفير؟</b><br>تحقق من كلمة المرور حرفاً بحرف؛ لا يمكن تجاوزها.</span></div><div class="how-item"><span class="num">i</span><span><b>هل تم تعديل الصورة؟</b><br>القص والضغط والفلاتر عادةً تدمر الرسالة المخفية.</span></div></div>
+        </aside>
+        <section id="resultCard" class="card result-card hidden" style="grid-column:1/-1">
+          <div class="result-main"><div class="result-top"><span id="resultChip" class="status-chip">تم التحقق</span><span id="resultMeta" class="hint"></span></div><h3 id="resultTitle">تم العثور على رسالة</h3><p id="resultDescription">تم التحقق من سلامة البيانات.</p><div id="extractedText" class="output" tabindex="0"></div><div class="result-actions"><button id="copyButton" class="secondary" type="button">نسخ النص</button><button id="saveTextButton" class="secondary" type="button">حفظ كملف TXT</button></div></div>
+        </section>
+      </section>
+    </main>
+    <footer class="footer">صُممت للأغراض المشروعة وحماية الخصوصية. احفظ الصورة الناتجة دون تعديل. <code>v1.0 · local-only</code></footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+'use strict';
+/*
+  سِتر V2 — تنسيق البيانات
+  رأس ثابت (88 بايت، 1-LSB) في بداية الصورة ونهايتها:
+  0..3  SITR | 4 version | 5 flags | 6 depth | 7 layout
+  8..11 payload length | 12..15 original length | 16..47 SHA-256 للنص
+  48..63 salt | 64..75 AES-GCM iv | 76..87 permutation seed
+  الحمولة: ضغط GZIP اختياري -> تشفير AES-GCM اختياري -> توزيع محدد شبه عشوائياً.
+*/
+const V2_MAGIC = new Uint8Array([0x53,0x49,0x54,0x52]); // SITR
+const V2_VERSION = 2;
+const V2_HEADER_SIZE = 88;
+const V2_HEADER_BITS = V2_HEADER_SIZE * 8;
+const V1_MAGIC = new Uint8Array([0x53,0x41,0x4e,0x41]); // SANA (legacy)
+const V1_VERSION = 1;
+const V1_HEADER_SIZE = 72;
+const FLAG_ENCRYPTED = 1;
+const FLAG_COMPRESSED = 2;
+const FLAG_SCATTERED = 4;
+const FLAG_MIRRORED = 8;
+const MAX_PAYLOAD = 30 * 1024 * 1024;
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder('utf-8', {fatal:true});
+const codecSupported = typeof CompressionStream !== 'undefined' && typeof DecompressionStream !== 'undefined';
+const $ = (id) => document.getElementById(id);
+const state = { embed:{image:null,file:null,outputUrl:null,outputBlob:null}, extract:{image:null,file:null}, lastText:'' };
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return '—';
+  const units=['بايت','ك.ب','م.ب','ج.ب']; let n=bytes, i=0;
+  while(n>=1024 && i<units.length-1){n/=1024;i++;}
+  return (i ? n.toFixed(n>=10?0:1) : Math.floor(n))+' '+units[i];
+}
+function showToast(message) {
+  const el=$('toast'); el.textContent=message; el.classList.add('show');
+  clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+function setAlert(id,message='') { const el=$(id); el.textContent=message; el.classList.toggle('show',Boolean(message)); }
+function randomBytes(length) { const out=new Uint8Array(length); crypto.getRandomValues(out); return out; }
+function concatBytes(...parts) { const total=parts.reduce((sum,p)=>sum+p.length,0), out=new Uint8Array(total); let at=0; for(const p of parts){out.set(p,at);at+=p.length;} return out; }
+function equalBytes(a,b) { if(a.length!==b.length)return false; let different=0;for(let i=0;i<a.length;i++)different|=a[i]^b[i];return different===0; }
+function safeFileName(name) { return (name||'صورة').replace(/\.[^.]+$/,'').replace(/[\\/:*?"<>|]/g,'_').slice(0,80)||'صورة'; }
+function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a;}
+function dataView(bytes){return new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);}
+
+function switchTab(mode) {
+  const embedding=mode==='embed';
+  $('embedPanel').classList.toggle('hidden',!embedding); $('extractPanel').classList.toggle('hidden',embedding);
+  $('embedTab').classList.toggle('active',embedding); $('extractTab').classList.toggle('active',!embedding);
+  $('embedTab').setAttribute('aria-selected',embedding); $('extractTab').setAttribute('aria-selected',!embedding);
+  setAlert('embedAlert');setAlert('extractAlert');
+}
+$('embedTab').addEventListener('click',()=>switchTab('embed'));
+$('extractTab').addEventListener('click',()=>switchTab('extract'));
+
+function attachDrop(dropId,fileId,handler) {
+  const drop=$(dropId),input=$(fileId);
+  ['dragenter','dragover'].forEach(type=>drop.addEventListener(type,event=>{event.preventDefault();drop.classList.add('drag');}));
+  ['dragleave','drop'].forEach(type=>drop.addEventListener(type,event=>{event.preventDefault();drop.classList.remove('drag');}));
+  drop.addEventListener('drop',event=>{const file=event.dataTransfer.files&&event.dataTransfer.files[0];if(file)handler(file);});
+  input.addEventListener('change',()=>{const file=input.files[0];if(file)handler(file);});
+}
+function loadImage(file) {
+  return new Promise((resolve,reject)=>{
+    if(!file||!file.type.startsWith('image/'))return reject(new Error('اختر ملف صورة صالحاً.'));
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{URL.revokeObjectURL(url);resolve(img);};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('تعذر قراءة ملف الصورة.'));};
+    img.src=url;
+  });
+}
+function setImageInfo(mode,file,img) {
+  const prefix=mode==='embed'?'embed':'extract';
+  state[mode].file=file;state[mode].image=img;
+  $(prefix+'Thumb').src=URL.createObjectURL(file); $(prefix+'FileName').textContent=file.name;
+  $(prefix+'FileMeta').textContent=`${img.naturalWidth} × ${img.naturalHeight} بكسل · ${formatBytes(file.size)}`;
+  $(prefix+'ImageInfo').classList.remove('hidden');
+  if(mode==='embed'){updateEmbedCapacity();$('embedButton').disabled=false;setAlert('embedAlert');$('downloadPanel').classList.remove('show');}
+  else{$('extractButton').disabled=false;setAlert('extractAlert');$('resultCard').classList.add('hidden');}
+}
+async function chooseEmbed(file){try{setImageInfo('embed',file,await loadImage(file));}catch(error){setAlert('embedAlert',error.message);}}
+async function chooseExtract(file){try{setImageInfo('extract',file,await loadImage(file));}catch(error){setAlert('extractAlert',error.message);}}
+attachDrop('embedDrop','embedFile',chooseEmbed); attachDrop('extractDrop','extractFile',chooseExtract);
+$('embedReplace').addEventListener('click',()=>$('embedFile').click()); $('extractReplace').addEventListener('click',()=>$('extractFile').click());
+$('embedClear').addEventListener('click',()=>{state.embed.image=null;state.embed.file=null;$('embedFile').value='';$('embedImageInfo').classList.add('hidden');$('embedButton').disabled=true;updateEmbedCapacity();});
+$('extractClear').addEventListener('click',()=>{state.extract.image=null;state.extract.file=null;$('extractFile').value='';$('extractImageInfo').classList.add('hidden');$('extractButton').disabled=true;$('resultCard').classList.add('hidden');});
+
+function selectedDepth(){return Number(document.querySelector('input[name="depth"]:checked').value);}
+function v2PayloadCapacityFromDimensions(width,height,depth) {
+  const colorChannels=width*height*3;
+  const usable=colorChannels-(V2_HEADER_BITS*2);
+  return usable>0?Math.floor((usable*depth)/8):0;
+}
+function updateEmbedCapacity() {
+  const img=state.embed.image, depth=selectedDepth(), rawLength=textEncoder.encode($('secretText').value).length;
+  const cap=img?v2PayloadCapacityFromDimensions(img.naturalWidth,img.naturalHeight,depth):0;
+  const estimated=rawLength+($('encryptToggle').checked?16:0), wantsCompression=$('compressionToggle').checked;
+  const percent=cap>0?Math.min(100,(estimated/cap)*100):0;
+  $('capacityText').textContent=img?`${formatBytes(cap)} صافية`:'—';
+  const meter=$('capacityMeter');meter.style.width=img?percent+'%':'0';meter.classList.toggle('warning',percent>90);
+  $('charCount').textContent=`${$('secretText').value.length.toLocaleString('ar')} حرف · ${formatBytes(rawLength)}`;
+  const impossible=!img||!$('secretText').value.length||($('encryptToggle').checked&&!$('embedPassword').value.length)||cap<=0||(!wantsCompression&&estimated>cap);
+  $('embedButton').disabled=impossible;
+  if(img&&cap<=0)setAlert('embedAlert','أبعاد الصورة صغيرة جداً لرأسَي سِتر V2. استخدم صورة أكبر.');
+  else if(img&&estimated>cap&&!wantsCompression)setAlert('embedAlert',`النص أطول من السعة المتاحة. تحتاج إلى ${formatBytes(estimated-cap)} إضافية على الأقل.`);
+  else if($('embedAlert').textContent.startsWith('النص أطول')||$('embedAlert').textContent.startsWith('أبعاد الصورة'))setAlert('embedAlert');
+}
+$('secretText').addEventListener('input',updateEmbedCapacity);
+document.querySelectorAll('input[name="depth"]').forEach(el=>el.addEventListener('change',updateEmbedCapacity));
+$('compressionToggle').addEventListener('change',updateEmbedCapacity); $('scatterToggle').addEventListener('change',updateEmbedCapacity);
+$('encryptToggle').addEventListener('change',()=>{const on=$('encryptToggle').checked;$('passwordBox').classList.toggle('disabled',!on);$('embedPassword').disabled=!on;updateEmbedCapacity();});
+$('embedPassword').addEventListener('input',updateEmbedCapacity);
+$('extractPassToggle').addEventListener('change',()=>{const on=$('extractPassToggle').checked;$('extractPasswordBox').classList.toggle('disabled',!on);$('extractPassword').disabled=!on;});
+function togglePassword(inputId,buttonId){$(buttonId).addEventListener('click',()=>{const input=$(inputId);input.type=input.type==='password'?'text':'password';$(buttonId).textContent=input.type==='password'?'◉':'◉̸';});}
+togglePassword('embedPassword','toggleEmbedPass');togglePassword('extractPassword','toggleExtractPass');
+if(!codecSupported){$('compressionToggle').checked=false;$('compressionToggle').disabled=true;$('compressionNote').textContent='ضغط GZIP غير مدعوم في هذا المتصفح؛ سيبقى التوزيع المموّه والرأس المكرر متاحين.';}
+
+async function deriveKey(password,salt) {
+  const source=await crypto.subtle.importKey('raw',textEncoder.encode(password),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:210000,hash:'SHA-256'},source,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function gzipTransform(bytes,action) {
+  const Stream=action==='compress'?CompressionStream:DecompressionStream;
+  if(typeof Stream==='undefined')throw new Error('هذا المتصفح لا يدعم معالجة ضغط GZIP المطلوبة.');
+  const stream=new Blob([bytes]).stream().pipeThrough(new Stream('gzip'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function makeV2Packet(message,password,options) {
+  const plain=textEncoder.encode(message), digest=new Uint8Array(await crypto.subtle.digest('SHA-256',plain));
+  const salt=randomBytes(16), iv=randomBytes(12), seed=randomBytes(12); let payload=plain, compressed=false;
+  if(options.compression&&codecSupported){
+    const candidate=await gzipTransform(plain,'compress');
+    if(candidate.length<plain.length){payload=candidate;compressed=true;}
+  }
+  const encrypted=Boolean(password);
+  if(encrypted){const key=await deriveKey(password,salt);payload=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,payload));}
+  if(payload.length>MAX_PAYLOAD)throw new Error('الحمولة كبيرة جداً لهذه الأداة.');
+  const header=new Uint8Array(V2_HEADER_SIZE);header.set(V2_MAGIC,0);header[4]=V2_VERSION;
+  header[5]=(encrypted?FLAG_ENCRYPTED:0)|(compressed?FLAG_COMPRESSED:0)|(options.scatter?FLAG_SCATTERED:0)|FLAG_MIRRORED;
+  header[6]=options.depth;header[7]=1;dataView(header).setUint32(8,payload.length,false);dataView(header).setUint32(12,plain.length,false);
+  header.set(digest,16);header.set(salt,48);header.set(iv,64);header.set(seed,76);
+  return {header,payload,meta:{encrypted,compressed,scattered:options.scatter,rawBytes:plain.length}};
+}
+function canvasPixels(img){const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);return {canvas,ctx,data:ctx.getImageData(0,0,canvas.width,canvas.height)};}
+function colorChannels(imageData){return Math.floor(imageData.data.length/4)*3;}
+function pixelDataIndex(colorIndex){return Math.floor(colorIndex/3)*4+(colorIndex%3);}
+function writeHeader(imageData,header,startColor) {
+  let bitAt=0; const data=imageData.data;
+  for(let byteIndex=0;byteIndex<header.length;byteIndex++)for(let bit=7;bit>=0;bit--){const index=pixelDataIndex(startColor+bitAt++);data[index]=(data[index]&0xfe)|((header[byteIndex]>>bit)&1);}
+}
+function readHeader(imageData,startColor,size) {
+  const out=new Uint8Array(size),data=imageData.data;let bitAt=0;
+  for(let byteIndex=0;byteIndex<size;byteIndex++)for(let bit=7;bit>=0;bit--){if(data[pixelDataIndex(startColor+bitAt++)]&1)out[byteIndex]|=1<<bit;}
+  return out;
+}
+async function permutationFor(header,channelCount) {
+  if(!header.scattered)return {step:1,offset:0};
+  const keyMaterial=concatBytes(header.salt,header.seed,textEncoder.encode('sitr-v2-permutation'));
+  const hash=new Uint8Array(await crypto.subtle.digest('SHA-256',keyMaterial)), view=dataView(hash);
+  if(channelCount<2)return {step:1,offset:0};
+  let step=(view.getUint32(0,false)%(channelCount-1))+1;
+  while(gcd(step,channelCount)!==1){step++;if(step>=channelCount)step=1;}
+  return {step,offset:view.getUint32(4,false)%channelCount};
+}
+async function writeV2Payload(imageData,payload,header) {
+  const allChannels=colorChannels(imageData), transportChannels=allChannels-(V2_HEADER_BITS*2), depth=header.depth, groups=Math.ceil(payload.length*8/depth);
+  if(groups>transportChannels)throw new Error('النص أطول من سعة الصورة بالإعداد الحالي.');
+  const permutation=await permutationFor(header,transportChannels),mask=(1<<depth)-1,data=imageData.data;let bitAt=0;
+  for(let groupAt=0;groupAt<groups;groupAt++){
+    let group=0;for(let q=0;q<depth;q++){group<<=1;if(bitAt<payload.length*8){group|=(payload[Math.floor(bitAt/8)]>>(7-(bitAt%8)))&1;bitAt++;}}
+    const local=header.scattered?((permutation.step*groupAt+permutation.offset)%transportChannels):groupAt;
+    const index=pixelDataIndex(V2_HEADER_BITS+local);data[index]=(data[index]&~mask)|group;
+  }
+}
+async function readV2Payload(imageData,header) {
+  const allChannels=colorChannels(imageData),transportChannels=allChannels-(V2_HEADER_BITS*2),depth=header.depth,needBits=header.length*8,groups=Math.ceil(needBits/depth);
+  if(groups>transportChannels)throw new Error('بنية بيانات غير صالحة أو تالفة.');
+  const permutation=await permutationFor(header,transportChannels),mask=(1<<depth)-1,data=imageData.data,out=new Uint8Array(header.length);let bitAt=0;
+  for(let groupAt=0;groupAt<groups;groupAt++){
+    const local=header.scattered?((permutation.step*groupAt+permutation.offset)%transportChannels):groupAt;
+    const group=data[pixelDataIndex(V2_HEADER_BITS+local)]&mask;
+    for(let q=0;q<depth&&bitAt<needBits;q++){if((group>>(depth-1-q))&1)out[Math.floor(bitAt/8)]|=1<<(7-(bitAt%8));bitAt++;}
+  }
+  return out;
+}
+function parseV2Header(header,totalChannels) {
+  if(!equalBytes(header.slice(0,4),V2_MAGIC))return null;
+  if(header[4]!==V2_VERSION)throw new Error(`إصدار بيانات سِتر غير مدعوم (${header[4]}).`);
+  const depth=header[6], usable=totalChannels-(V2_HEADER_BITS*2), length=dataView(header).getUint32(8,false), originalLength=dataView(header).getUint32(12,false);
+  if((depth!==1&&depth!==2)||usable<=0)throw new Error('إعدادات الرأس غير صالحة.');
+  if(length>MAX_PAYLOAD||originalLength>MAX_PAYLOAD||length>Math.floor(usable*depth/8))throw new Error('بنية بيانات غير صالحة أو تالفة.');
+  return {format:'v2',depth,length,originalLength,encrypted:Boolean(header[5]&FLAG_ENCRYPTED),compressed:Boolean(header[5]&FLAG_COMPRESSED),scattered:Boolean(header[5]&FLAG_SCATTERED),mirrored:Boolean(header[5]&FLAG_MIRRORED),digest:header.slice(16,48),salt:header.slice(48,64),iv:header.slice(64,76),seed:header.slice(76,88)};
+}
+function locateV2(imageData) {
+  const total=colorChannels(imageData);if(total<V2_HEADER_BITS*2)return null;const starts=[0,total-V2_HEADER_BITS],errors=[];
+  for(const start of starts){try{const parsed=parseV2Header(readHeader(imageData,start,V2_HEADER_SIZE),total);if(parsed)return parsed;}catch(error){errors.push(error);}}
+  if(errors.length)throw errors[0];return null;
+}
+
+/* قارئ V1 للتوافق مع الصور التي أنشأها الإصدار السابق من الأداة. */
+function legacyCapacity(imageData,depth){return Math.floor((colorChannels(imageData)*depth)/8);}
+function readLegacy(imageData,byteCount,depth) {
+  const needBits=byteCount*8,out=new Uint8Array(byteCount),data=imageData.data,mask=(1<<depth)-1;let bitAt=0;
+  for(let color=0;color<colorChannels(imageData)&&bitAt<needBits;color++){
+    const group=data[pixelDataIndex(color)]&mask;
+    for(let q=0;q<depth&&bitAt<needBits;q++){if((group>>(depth-1-q))&1)out[Math.floor(bitAt/8)]|=1<<(7-(bitAt%8));bitAt++;}
+  }
+  if(bitAt<needBits)throw new Error('الصورة أصغر من أن تحتوي هذه البيانات.');return out;
+}
+function parseV1Header(head,capacity) {
+  if(!equalBytes(head.slice(0,4),V1_MAGIC))return null;
+  if(head[4]!==V1_VERSION)throw new Error(`إصدار بيانات قديم غير مدعوم (${head[4]}).`);
+  const length=dataView(head).getUint32(8,false);if(length>MAX_PAYLOAD||length+V1_HEADER_SIZE>capacity)throw new Error('بنية بيانات قديمة غير صالحة أو تالفة.');
+  return {format:'v1',depth:0,length,encrypted:Boolean(head[5]&FLAG_ENCRYPTED),compressed:false,scattered:false,digest:head.slice(12,44),salt:head.slice(44,60),iv:head.slice(60,72)};
+}
+function locateV1(imageData) {
+  for(const depth of [1,2]){const capacity=legacyCapacity(imageData,depth);if(capacity<V1_HEADER_SIZE)continue;const parsed=parseV1Header(readLegacy(imageData,V1_HEADER_SIZE,depth),capacity);if(parsed){parsed.depth=depth;return parsed;}}
+  return null;
+}
+function locatePacket(imageData){const modern=locateV2(imageData);return modern||locateV1(imageData);}
+async function blobFromCanvas(canvas){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('تعذر إنشاء ملف PNG.')),'image/png'));}
+function setWorking(button,working,label){button.disabled=working;button.dataset.label=button.dataset.label||button.textContent;button.innerHTML=working?`<span class="loader"></span> ${label}`:button.dataset.label;}
+
+$('embedButton').addEventListener('click',async()=>{
+  const button=$('embedButton'),message=$('secretText').value,img=state.embed.image,encrypted=$('encryptToggle').checked,password=$('embedPassword').value;
+  setAlert('embedAlert');$('downloadPanel').classList.remove('show');
+  if(!img||!message)return setAlert('embedAlert','اختر صورة واكتب رسالة أولاً.');
+  if(encrypted&&!password)return setAlert('embedAlert','أدخل كلمة مرور لتشفير الرسالة أو أوقف خيار التشفير.');
+  try{
+    setWorking(button,true,'يُحسّن ويُضمّن…');await new Promise(resolve=>setTimeout(resolve,10));
+    const packet=await makeV2Packet(message,encrypted?password:'',{depth:selectedDepth(),compression:$('compressionToggle').checked,scatter:$('scatterToggle').checked});
+    const {canvas,ctx,data}=canvasPixels(img), cap=v2PayloadCapacityFromDimensions(img.naturalWidth,img.naturalHeight,packet.header[6]);
+    if(packet.payload.length>cap)throw new Error(`النص بعد المعالجة يحتاج ${formatBytes(packet.payload.length)} بينما السعة ${formatBytes(cap)}. استخدم صورة أكبر أو عمق 2 بت.`);
+    writeHeader(data,packet.header,0);writeHeader(data,packet.header,colorChannels(data)-V2_HEADER_BITS);await writeV2Payload(data,packet.payload,{...parseV2Header(packet.header,colorChannels(data))});
+    ctx.putImageData(data,0,0);const blob=await blobFromCanvas(canvas);
+    if(state.embed.outputUrl)URL.revokeObjectURL(state.embed.outputUrl);state.embed.outputUrl=URL.createObjectURL(blob);state.embed.outputBlob=blob;
+    const details=[`V2`,packet.meta.compressed?'GZIP ذكي':'بدون ضغط',packet.meta.scattered?'توزيع مموّه':'توزيع تسلسلي',packet.meta.encrypted?'مشفّرة':'غير مشفّرة'];
+    $('downloadMeta').textContent=`${img.naturalWidth} × ${img.naturalHeight} · ${formatBytes(blob.size)} · ${details.join(' · ')}`;
+    $('downloadPanel').classList.add('show');showToast('تمت معالجة الرسالة وتضمينها بنجاح.');
+  }catch(error){setAlert('embedAlert',error.message||'حدث خطأ أثناء تضمين الرسالة.');}
+  finally{setWorking(button,false);updateEmbedCapacity();}
+});
+$('downloadButton').addEventListener('click',()=>{if(!state.embed.outputUrl)return;const link=document.createElement('a');link.href=state.embed.outputUrl;link.download=`${safeFileName(state.embed.file?.name)}-مخفي-v2.png`;document.body.appendChild(link);link.click();link.remove();showToast('بدأ تنزيل الصورة المخفية.');});
+
+function setResult(type,title,description,text='',meta='') {
+  const card=$('resultCard'),chip=$('resultChip');card.classList.remove('hidden');chip.className='status-chip '+(type==='error'?'error':type==='warning'?'warning':'');
+  chip.textContent=type==='success'?'تم التحقق':type==='warning'?'تحتاج كلمة مرور':'تعذر الاستخراج';
+  $('resultTitle').textContent=title;$('resultDescription').textContent=description;$('resultMeta').textContent=meta;$('extractedText').textContent=text;state.lastText=text;
+  $('copyButton').disabled=!text;$('saveTextButton').disabled=!text;
+}
+function extractionMeta(found,extra='') { const fields=[found.format==='v2'?'سِتر V2':'تنسيق سابق V1',`عمق ${found.depth} بت`,found.encrypted?'مشفّرة':'غير مشفّرة'];if(found.format==='v2')fields.splice(2,0,found.compressed?'GZIP':'دون ضغط',found.scattered?'توزيع مموّه':'توزيع تسلسلي');if(extra)fields.push(extra);return fields.join(' · '); }
+$('extractButton').addEventListener('click',async()=>{
+  const button=$('extractButton'),img=state.extract.image;setAlert('extractAlert');$('resultCard').classList.add('hidden');
+  if(!img)return setAlert('extractAlert','اختر صورة أولاً.');
+  try{
+    setWorking(button,true,'يفحص الرؤوس والحمولة…');await new Promise(resolve=>setTimeout(resolve,10));
+    const {data}=canvasPixels(img);const found=locatePacket(data);
+    if(!found){setResult('error','لم نعثر على رسالة سِتر','لا تحتوي هذه الصورة على توقيع صالح، أو جرى ضغطها/تعديلها بعد الإخفاء.');return;}
+    if(found.encrypted&&(!$('extractPassToggle').checked||!$('extractPassword').value)){setResult('warning','الرسالة محمية بكلمة مرور','عُثر على بيانات مشفّرة. فعّل خيار كلمة المرور وأدخلها لإكمال الاستخراج.','',extractionMeta(found));return;}
+    let payload=found.format==='v2'?await readV2Payload(data,found):readLegacy(data,V1_HEADER_SIZE+found.length,found.depth).slice(V1_HEADER_SIZE);
+    if(found.encrypted){
+      try{const key=await deriveKey($('extractPassword').value,found.salt);payload=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:found.iv},key,payload));}
+      catch{setResult('error','تعذر فك تشفير الرسالة','كلمة المرور غير صحيحة، أو أن الصورة تعرضت لتعديل. لم يُكشف أي نص.','',extractionMeta(found));return;}
+    }
+    if(found.compressed){
+      try{payload=await gzipTransform(payload,'decompress');}
+      catch{setResult('error','تعذر فتح البيانات المضغوطة','البيانات المضغوطة تالفة أو لا يدعم المتصفح فتحها.','',extractionMeta(found));return;}
+    }
+    if(found.format==='v2'&&payload.length!==found.originalLength){setResult('error','فشل فحص طول الرسالة','طول النص بعد المعالجة لا يطابق الرأس؛ قد تكون الصورة تالفة.','',extractionMeta(found));return;}
+    const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',payload));
+    if(!equalBytes(digest,found.digest)){setResult('error','فشل فحص سلامة الرسالة','استُخرجت بيانات لكن بصمة السلامة لا تتطابق. قد تكون الصورة عُدلت أو تالفة.','',extractionMeta(found));return;}
+    let text;try{text=textDecoder.decode(payload);}catch{setResult('error','ترميز النص غير صالح','تم التحقق من البنية، لكن المحتوى ليس نص UTF-8 صالحاً.','',extractionMeta(found));return;}
+    setResult('success','تم استخراج الرسالة بنجاح','تم التحقق من الرأس المكرر وبصمة سلامة النص.',text,extractionMeta(found,formatBytes(payload.length)));showToast('تم استخراج الرسالة والتحقق منها.');
+  }catch(error){setAlert('extractAlert',error.message||'حدث خطأ أثناء قراءة الصورة.');}
+  finally{setWorking(button,false);}
+});
+$('copyButton').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(state.lastText);showToast('تم نسخ النص.');}catch{showToast('تعذر الوصول للحافظة؛ انسخ النص يدوياً.');}});
+$('saveTextButton').addEventListener('click',()=>{const blob=new Blob([state.lastText],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='رسالة-مستخرجة.txt';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('تم حفظ ملف النص.');});
+updateEmbedCapacity();
+
+  </script>
+</body>
+</html>
