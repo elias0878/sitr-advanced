@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#101a2c" />
-  <title>سِتر — مختبر إخفاء النصوص داخل الصور</title>
+  <title>سِتر — إخفاء النصوص داخل الصور (Steganography)</title>
+<meta name="description" content="مختبر عربي لإخفاء النصوص داخل الصور بتقنية LSB: شفّر رسائلك داخل صورة واستخرجها لاحقاً، كل شيء داخل متصفحك دون رفع الملفات.">
   <style>
     :root {
       --ink:#ecf4ff; --muted:#9daec5; --faint:#62748d; --surface:#142137; --surface-2:#192a45;
@@ -34,6 +35,69 @@
     body{background:#f4f7fb!important;color:#142237!important;font-family:Tahoma,Arial,"Noto Sans Arabic",sans-serif}.shell>.topbar,.shell>.hero,.shell>.tabbar,.shell>main,.shell>.footer{display:none!important}#cleanApp{min-height:100vh;background:radial-gradient(900px 420px at 100% -5%,#dfeeff 0,transparent 66%),linear-gradient(135deg,#f9fbff,#eef4fb);padding:30px 0 44px}.clean-shell{width:min(1040px,calc(100% - 32px));margin:auto}.clean-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 0 26px;border-bottom:1px solid #d9e2ee}.clean-brand{display:flex;align-items:center;gap:13px}.clean-logo{height:58px;width:58px;border-radius:17px;object-fit:cover;border:1px solid #ccd8e8;box-shadow:0 8px 22px rgba(27,61,99,.12)}.clean-brand h1{margin:0;font-size:23px;color:#10253f}.clean-brand p{margin:4px 0 0;color:#60738c;font-size:12px}.clean-tabs{display:flex;gap:7px;background:#e6edf5;border:1px solid #d6e0eb;padding:5px;border-radius:13px}.clean-tab{border:0;background:transparent;color:#536983;padding:10px 15px;border-radius:9px;font-weight:800;font-size:13px}.clean-tab.active{background:#fff;color:#12375b;box-shadow:0 3px 10px rgba(36,66,100,.14)}.clean-page{padding:34px 0}.clean-page.hidden{display:none}.clean-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}.clean-card{background:#fff;border:1px solid #dce5f0;border-radius:18px;box-shadow:0 14px 38px rgba(31,60,95,.07);padding:22px}.clean-card h2{font-size:17px;color:#153656;margin:0 0 18px}.clean-card h3{font-size:13px;color:#315574;margin:0 0 11px}.clean-field{margin-bottom:15px}.clean-field label{display:block;color:#3b5873;font-size:12px;font-weight:800;margin-bottom:7px}.clean-field input,.clean-field textarea,.clean-field select{width:100%;border:1px solid #cbd8e6;border-radius:10px;background:#fbfdff;color:#152d46;padding:12px;outline:none;font:inherit}.clean-field textarea{min-height:150px;resize:vertical;line-height:1.7}.clean-field input:focus,.clean-field textarea:focus,.clean-field select:focus{border-color:#2d88b6;box-shadow:0 0 0 3px rgba(45,136,182,.12)}.clean-upload{border:1.5px dashed #9ab5ce;background:#f8fbfe;border-radius:13px;padding:22px;text-align:center;cursor:pointer;display:block;color:#56728d;font-size:13px}.clean-upload strong{display:block;color:#1b466b;font-size:15px;margin-bottom:5px}.clean-upload input{display:none}.clean-file{margin-top:11px;padding:10px 12px;border-radius:9px;background:#eef6fc;color:#456580;font-size:12px;word-break:break-all}.clean-btn{border:0;border-radius:10px;padding:13px 17px;background:#176a9a;color:#fff;font-weight:900;font-size:14px;cursor:pointer;transition:.16s}.clean-btn:hover{background:#10567e;transform:translateY(-1px)}.clean-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.clean-btn.secondary{background:#eaf1f7;color:#26506e;border:1px solid #ccdbe8}.clean-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.clean-status{margin-top:13px;padding:11px 12px;border-radius:9px;background:#edf5fb;border:1px solid #cfe0ed;color:#315976;font-size:12px;line-height:1.65}.clean-status.error{background:#fff0f1;border-color:#f2c4ca;color:#a63a49}.clean-mini{color:#718398;font-size:11px;line-height:1.75;margin:0}.clean-choice{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.clean-choice label{margin:0!important;display:block;border:1px solid #d5e0eb;padding:10px;border-radius:10px;cursor:pointer;text-align:center;font-size:11px;color:#47637c}.clean-choice input{width:auto!important;margin-left:4px;accent-color:#176a9a}.output-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}.output-file{font-size:12px;color:#58728b}.result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.result-box{background:#fff;border:1px solid #dce5f0;border-radius:14px;overflow:hidden}.result-box.wide{grid-column:1/-1}.result-box h3{margin:0;padding:11px 13px;background:#f7faff;border-bottom:1px solid #e0e8f1;font-size:12px;color:#264e70}.result-box pre{margin:0;max-height:290px;overflow:auto;white-space:pre-wrap;word-break:break-word;direction:auto;padding:12px;color:#233c53;font:11px/1.72 Consolas,"Cascadia Code",monospace}.recovered{padding:13px;white-space:pre-wrap;word-break:break-word;line-height:1.8;font-size:13px;color:#1a3a55;min-height:68px}.download-list{display:flex;gap:9px;flex-wrap:wrap;padding-top:10px}.download-link{display:inline-flex;text-decoration:none;align-items:center;border:1px solid #b9d2e4;background:#f2f9ff;color:#155c89;border-radius:9px;padding:10px 12px;font-size:12px;font-weight:800}.clean-footer{display:flex;align-items:center;gap:13px;border-top:1px solid #d8e2ec;margin-top:28px;padding-top:20px;color:#5c7187}.clean-footer img{height:52px;width:52px;border-radius:13px;object-fit:cover}.clean-footer b{color:#183c5d;font-size:14px}.clean-footer p{margin:4px 0 0;font-size:11px}.clean-socials{margin-right:auto;display:flex;gap:6px;flex-wrap:wrap}.clean-socials a{font-size:10px;color:#315b7d;background:#fff;border:1px solid #d3e0eb;border-radius:7px;text-decoration:none;padding:7px 8px}@media(max-width:760px){.clean-grid{grid-template-columns:1fr}.clean-head{align-items:flex-start;flex-direction:column}.result-grid{grid-template-columns:1fr}.result-box.wide{grid-column:auto}.clean-choice{grid-template-columns:1fr}.clean-footer{align-items:flex-start;flex-wrap:wrap}.clean-socials{margin-right:0}}
 
   </style>
+<!-- SEO:BEGIN — فريق ابونواف -->
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="keywords" content="إخفاء النصوص, steganography, LSB, تشفير داخل الصور, ستر, ابونواف">
+<link rel="canonical" href="https://sitr-advanced.vercel.app/">
+<link rel="alternate" hreflang="ar" href="https://sitr-advanced.vercel.app/">
+<link rel="alternate" hreflang="x-default" href="https://sitr-advanced.vercel.app/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="فريق ابونواف">
+<meta property="og:locale" content="ar_SA">
+<meta property="og:url" content="https://sitr-advanced.vercel.app/">
+<meta property="og:title" content="سِتر — إخفاء النصوص داخل الصور (Steganography)">
+<meta property="og:description" content="مختبر عربي لإخفاء النصوص داخل الصور بتقنية LSB: شفّر رسائلك داخل صورة واستخرجها لاحقاً، كل شيء داخل متصفحك دون رفع الملفات.">
+<meta property="og:image" content="https://sitr-advanced.vercel.app/assets/og-image.png">
+<meta property="og:image:secure_url" content="https://sitr-advanced.vercel.app/assets/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="سِتر — إخفاء النصوص داخل الصور (Steganography)">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@ksa_hack2">
+<meta name="twitter:creator" content="@ksa_hack2">
+<meta name="twitter:title" content="سِتر — إخفاء النصوص داخل الصور (Steganography)">
+<meta name="twitter:description" content="مختبر عربي لإخفاء النصوص داخل الصور بتقنية LSB: شفّر رسائلك داخل صورة واستخرجها لاحقاً، كل شيء داخل متصفحك دون رفع الملفات.">
+<meta name="twitter:image" content="https://sitr-advanced.vercel.app/assets/og-image.png">
+<meta name="twitter:image:alt" content="سِتر — إخفاء النصوص داخل الصور (Steganography)">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "سِتر",
+      "url": "https://sitr-advanced.vercel.app/",
+      "description": "مختبر عربي لإخفاء النصوص داخل الصور بتقنية LSB: شفّر رسائلك داخل صورة واستخرجها لاحقاً، كل شيء داخل متصفحك دون رفع الملفات.",
+      "inLanguage": "ar",
+      "image": "https://sitr-advanced.vercel.app/assets/og-image.png",
+      "author": {
+        "@type": "Organization",
+        "name": "فريق ابونواف",
+        "url": "https://ant.xo.je"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "فريق ابونواف",
+        "url": "https://ant.xo.je"
+      },
+      "@context": "https://schema.org",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "أي متصفح ويب",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "SAR"
+      }
+    }
+  ]
+}
+</script>
+<!-- SEO:END -->
 </head>
 <body>
   <div class="shell">
