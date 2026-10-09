@@ -13,3 +13,7 @@ Thumbs.db
 # Local artifacts
 node_modules/
 coverage/
+
+# Python
+__pycache__/
+*.py[cod]

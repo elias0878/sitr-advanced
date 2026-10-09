@@ -155,7 +155,12 @@
               <div class="thumb"><img id="scanThumb" alt="معاينة الملف المفحوص" /></div>
               <div><div class="file-title" id="scanFileName"></div><div class="file-meta" id="scanFileMeta"></div><div class="file-actions"><button class="text-btn" type="button" id="scanReplace">تبديل الملف</button><button class="text-btn" type="button" id="scanClear">إزالة</button></div></div>
             </div>
-            <div class="action-row"><button class="primary" id="scanButton" type="button" disabled>إجراء فحص شامل</button><span class="support">الحاوية · Metadata · بيانات لاحقة · بصمات · تحليل LSB</span></div>
+            <div class="field advanced-box" style="margin-top:16px">
+              <div class="advanced-title"><span>محرك الفحص المركّب</span><span class="advanced-pill">DEEP SWEEP</span></div>
+              <label class="advanced-check"><input id="deepScanToggle" type="checkbox" checked><span><b>تمشيط عميق لمسارات البتات</b>يفحص ترتيبات RGB وBGR والقنوات المفردة وطبقات 1–4 بت ومحاذاة البايت؛ أبطأ لكن أوسع.</span></label>
+              <label class="advanced-check"><input id="carveToggle" type="checkbox" checked><span><b>نحت البصمات والحمولات</b>يبحث عن رؤوس ملفات ونصوص قابلة للقراءة في البيانات الخام والـ tail ومسارات البتات.</span></label>
+            </div>
+            <div class="action-row"><button class="primary" id="scanButton" type="button" disabled>إجراء فحص شامل</button><span class="support">الحاوية · Metadata · بيانات لاحقة · بصمات · تحليل LSB متعدد المسارات</span></div>
             <div id="scanAlert" class="alert error" role="alert"></div>
           </div>
         </div>
@@ -528,6 +533,58 @@ function parseTiffMetadata(raw,source='EXIF'){
   const first=u32(base+4);if(first!==null)readIfd(first,'IFD0');
   return output.length?output:[{source,key:'EXIF',value:'لم توجد وسوم TIFF مقروءة'}];
 }
+function decodeXmlEntities(value){return value.replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');}
+function parseXmpMetadata(raw,source='XMP'){
+  const text=scanUtf8(raw,120000),out=[],seen=new Set();if(!text)return out;
+  const add=(key,value)=>{value=scanShort(decodeXmlEntities(String(value).replace(/\s+/g,' ').trim()),700);if(!value||seen.has(key+'|'+value)||out.length>=60)return;seen.add(key+'|'+value);out.push({source,key:`XMP.${key}`,value});};
+  for(const match of text.matchAll(/\b([\w.-]+:[\w.-]+)=["']([^"']{1,1200})["']/g))add(match[1],match[2]);
+  for(const match of text.matchAll(/<([\w.-]+:[\w.-]+)\b[^>]*>([^<]{1,1200})<\/\1>/g))add(match[1],match[2]);
+  if(!out.length)out.push({source,key:'XMP packet',value:scanShort(text,1800)});
+  return out;
+}
+function parseIptcIim(data,source='JPEG IPTC'){
+  const names={'2:5':'ObjectName','2:7':'EditStatus','2:25':'Keywords','2:55':'DateCreated','2:60':'TimeCreated','2:80':'Creator','2:85':'CreatorJobTitle','2:90':'City','2:92':'Sublocation','2:95':'ProvinceState','2:101':'Country','2:103':'CountryCode','2:105':'Headline','2:110':'Credit','2:115':'Source','2:116':'Copyright','2:120':'Description','2:122':'DescriptionWriter'};
+  const out=[];let pos=0;
+  while(pos+5<=data.length&&out.length<70){if(data[pos]!==0x1c){pos++;continue;}const record=data[pos+1],dataset=data[pos+2];let length=(data[pos+3]<<8)|data[pos+4],start=pos+5;if(data[pos+3]&0x80){const extended=data[pos+4]&0x7f;if(!extended||extended>4||pos+5+extended>data.length){pos++;continue;}length=0;for(let i=0;i<extended;i++)length=length*256+data[pos+5+i];start=pos+5+extended;}if(length<0||start+length>data.length){pos++;continue;}const key=`${record}:${dataset}`,name=names[key]||`Dataset ${key}`,value=scanShort(scanSafeText(data.slice(start,start+Math.min(length,5000))),1000);out.push({source,key:name,value});pos=start+length;}
+  return out;
+}
+function parsePhotoshopApp13(data){
+  const out=[];if(scanAscii(data,0,14)!=='Photoshop 3.0\0')return out;let pos=14;
+  while(pos+12<=data.length){if(scanAscii(data,pos,4)!=='8BIM'){pos++;continue;}const id=(data[pos+4]<<8)|data[pos+5];pos+=6;const nameLength=data[pos++];pos+=nameLength;if((1+nameLength)%2)pos++;if(pos+4>data.length)break;const size=scanU32BE(data,pos);pos+=4;if(pos+size>data.length)break;const resource=data.slice(pos,pos+size);if(id===0x0404){const iptc=parseIptcIim(resource);if(iptc.length)out.push(...iptc);else out.push({source:'JPEG IPTC',key:'IPTC resource',value:`كتلة 0x0404 بحجم ${formatBytes(size)} غير قابلة للفك بالكامل.`});}pos+=size;if(size%2)pos++;}
+  return out;
+}
+function readBitProfile(imageData,profile,maxBytes=49152,bitOffset=0){
+  const required=maxBytes*8+bitOffset,out=new Uint8Array(maxBytes),data=imageData.data;let sourceAt=0,destAt=0;
+  outer:for(let p=0;p<data.length;p+=4){for(const channel of profile.channels){for(const plane of profile.planes){const bit=(data[p+channel]>>plane)&1;if(sourceAt++<bitOffset)continue;if(bit)out[Math.floor(destAt/8)]|=1<<(7-(destAt%8));destAt++;if(destAt>=maxBytes*8)break outer;}}}
+  return out.slice(0,Math.ceil(destAt/8));
+}
+function profileLabel(profile){return `${profile.name} · planes ${profile.planes.join('→')}`;}
+async function deepBitSweep(imageData){
+  const profiles=[
+    {name:'RGB',channels:[0,1,2],planes:[0]},{name:'BGR',channels:[2,1,0],planes:[0]},
+    {name:'R',channels:[0],planes:[0]},{name:'G',channels:[1],planes:[0]},{name:'B',channels:[2],planes:[0]},
+    {name:'RGB',channels:[0,1,2],planes:[1,0]},{name:'RGB',channels:[0,1,2],planes:[0,1]},
+    {name:'BGR',channels:[2,1,0],planes:[1,0]},{name:'BGR',channels:[2,1,0],planes:[0,1]},
+    {name:'RGB',channels:[0,1,2],planes:[1]},{name:'RGB',channels:[0,1,2],planes:[2]},{name:'RGB',channels:[0,1,2],planes:[3]},
+    {name:'R/G/B',channels:[0,1,2],planes:[2,1,0]}
+  ];
+  const lines=[],candidates=[],seen=new Set();let checked=0;
+  for(const profile of profiles){for(let align=0;align<8;align++){
+    const bytes=readBitProfile(imageData,profile,49152,align),signatures=findFileSignatures(bytes,null,true).filter(item=>item.offset<49152-8&&item.name!=='Sitr V1 marker'&&item.name!=='Sitr V2 marker'),strings=readableAsciiRuns(bytes,13,2),label=`${profileLabel(profile)} · offset ${align}`;
+    const meaningfulStrings=strings.filter(str=>/[A-Za-z]{4,}/.test(str));
+    if(signatures.length||meaningfulStrings.length){
+      const unique=signatures.filter(item=>{const key=`${label}|${item.name}|${item.offset}`;if(seen.has(key))return false;seen.add(key);return true;});
+      const signatureText=unique.map(item=>`${item.name} @${item.offset}`).join(', '),stringText=meaningfulStrings.map(value=>`“${value}”`).join(' · '),firstOffset=unique.length?unique[0].offset:0,preview=scanShort(scanSafeText(bytes.slice(firstOffset,firstOffset+600)),360);
+      lines.push(`• ${label}: ${signatureText}${signatureText&&stringText?' | ':''}${stringText}${unique.length?`\n  preview @${firstOffset}: ${preview}`:''}`);
+      candidates.push({kind:'deep-stream',profile:label,signatures:unique,strings:meaningfulStrings,preview});
+    }
+    checked++;if(checked%12===0)await new Promise(resolve=>setTimeout(resolve,0));
+    if(candidates.length>=30){lines.push('… تم بلوغ حد 30 نتيجة في التمشيط العميق؛ يظل تحليل الحاوية والـ metadata كاملاً.');return {lines,candidates,checked,limited:true};}
+  }}
+  if(!lines.length)lines.push(`لم يظهر ملف أو نص واضح خلال ${checked} تركيباً من طبقات البتات ومحاذاة البايت.`);
+  return {lines,candidates,checked,limited:false};
+}
+
 async function parsePng(bytes){
   const report={format:'PNG',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};let pos=8;
   while(pos+12<=bytes.length){
@@ -559,10 +616,10 @@ async function parseJpeg(bytes){
     if(marker===0xfe)report.metadata.push({source:'JPEG COM',key:'Comment',value:scanShort(scanSafeText(data),1800)});
     if(marker===0xe1){
       if(scanAscii(data,0,6)==='Exif\0\0')report.metadata.push(...parseTiffMetadata(data,'JPEG EXIF'));
-      else if(scanAscii(data,0,29)==='http://ns.adobe.com/xap/1.0/\0')report.metadata.push({source:'JPEG XMP',key:'XMP',value:scanShort(scanSafeText(data.slice(29)),1800)});
+      else if(scanAscii(data,0,29)==='http://ns.adobe.com/xap/1.0/\0')report.metadata.push(...parseXmpMetadata(data.slice(29),'JPEG XMP'));
       else report.metadata.push({source:'JPEG APP1',key:'APP1 raw',value:scanShort(scanSafeText(data),500)});
     }
-    if(marker===0xed&&scanAscii(data,0,13)==='Photoshop 3.0')report.metadata.push({source:'JPEG APP13',key:'Photoshop/IPTC',value:`كتلة IPTC/Photoshop بحجم ${formatBytes(data.length)}`});
+    if(marker===0xed&&scanAscii(data,0,14)==='Photoshop 3.0\0'){const iptc=parsePhotoshopApp13(data);report.metadata.push(...(iptc.length?iptc:[{source:'JPEG APP13',key:'Photoshop/IPTC',value:`كتلة IPTC/Photoshop بحجم ${formatBytes(data.length)}`}]))}
     if(marker===0xe2&&scanAscii(data,0,11)==='ICC_PROFILE')report.metadata.push({source:'JPEG APP2',key:'ICC profile',value:`ملف تعريف لوني بحجم ${formatBytes(data.length)}`});
     if(marker===0xda){
       let eoi=-1;for(let i=bytes.length-2;i>=end;i--)if(bytes[i]===0xff&&bytes[i+1]===0xd9){eoi=i;break;}
@@ -575,7 +632,7 @@ async function parseJpeg(bytes){
 function parseWebp(bytes){
   const report={format:'WebP',chunks:[],metadata:[],warnings:[],tail:null,endOffset:null};if(bytes.length<12)return report;
   const declared=scanU32LE(bytes,4)+8;let pos=12;
-  while(pos+8<=bytes.length&&pos<declared){const type=scanAscii(bytes,pos,4),size=scanU32LE(bytes,pos+4),start=pos+8,end=start+size;if(end>bytes.length){report.warnings.push(`كتلة WebP غير مكتملة (${type}).`);break;}const data=bytes.slice(start,end);report.chunks.push({type,size,offset:pos,unknown:!['VP8 ','VP8L','VP8X','ALPH','ANIM','ANMF','ICCP','EXIF','XMP '].includes(type)});if(type==='XMP ')report.metadata.push({source:'WebP XMP',key:'XMP',value:scanShort(scanSafeText(data),1800)});if(type==='EXIF')report.metadata.push(...parseTiffMetadata(data,'WebP EXIF'));if(type==='ICCP')report.metadata.push({source:'WebP ICCP',key:'ICC profile',value:`ملف تعريف لوني بحجم ${formatBytes(size)}`});pos=end+(size%2);}
+  while(pos+8<=bytes.length&&pos<declared){const type=scanAscii(bytes,pos,4),size=scanU32LE(bytes,pos+4),start=pos+8,end=start+size;if(end>bytes.length){report.warnings.push(`كتلة WebP غير مكتملة (${type}).`);break;}const data=bytes.slice(start,end);report.chunks.push({type,size,offset:pos,unknown:!['VP8 ','VP8L','VP8X','ALPH','ANIM','ANMF','ICCP','EXIF','XMP '].includes(type)});if(type==='XMP ')report.metadata.push(...parseXmpMetadata(data,'WebP XMP'));if(type==='EXIF')report.metadata.push(...parseTiffMetadata(data,'WebP EXIF'));if(type==='ICCP')report.metadata.push({source:'WebP ICCP',key:'ICC profile',value:`ملف تعريف لوني بحجم ${formatBytes(size)}`});pos=end+(size%2);}
   report.endOffset=Math.min(declared,bytes.length);if(declared!==bytes.length)report.warnings.push(`حجم RIFF المعلن ${formatBytes(declared)} مقابل حجم فعلي ${formatBytes(bytes.length)}.`);if(report.endOffset<bytes.length)report.tail={offset:report.endOffset,length:bytes.length-report.endOffset};return report;
 }
 function parseGif(bytes){
@@ -584,9 +641,9 @@ function parseGif(bytes){
 function parseBmp(bytes){const declared=bytes.length>=6?scanU32LE(bytes,2):0;const report={format:'BMP',chunks:[{type:'BMP stream',size:bytes.length,offset:0,unknown:false}],metadata:[],warnings:[],tail:null,endOffset:declared||null};if(declared&&declared<bytes.length)report.tail={offset:declared,length:bytes.length-declared};if(declared&&declared!==bytes.length)report.warnings.push(`حجم BMP المعلن ${formatBytes(declared)} مقابل الحجم الفعلي ${formatBytes(bytes.length)}.`);return report;}
 function parseTiff(bytes){return {format:'TIFF',chunks:[{type:'TIFF stream',size:bytes.length,offset:0,unknown:false}],metadata:parseTiffMetadata(bytes,'TIFF'),warnings:[],tail:null,endOffset:bytes.length};}
 async function parseContainer(bytes){const format=scanFormat(bytes);if(format==='PNG')return parsePng(bytes);if(format==='JPEG')return parseJpeg(bytes);if(format==='WebP')return parseWebp(bytes);if(format==='GIF')return parseGif(bytes);if(format==='BMP')return parseBmp(bytes);if(format==='TIFF')return parseTiff(bytes);return {format,chunks:[],metadata:[],warnings:['تنسيق غير مدعوم للتفكيك الكامل؛ سيجري فحص البصمات والبيانات الخام فقط.'],tail:null,endOffset:null};}
-function findFileSignatures(bytes,tail){
-  const found=[],areas=[[0,Math.min(bytes.length,2*1024*1024)]];if(tail)areas.push([tail.offset,bytes.length]);
-  for(const sig of FILE_SIGNATURES){let positions=[];for(const [start,end] of areas){const at=scanIndexOf(bytes,sig.bytes,start,end);if(at>=0&&!positions.includes(at))positions.push(at);}for(const offset of positions)found.push({name:sig.name,offset,insideTail:tail?offset>=tail.offset:false});}
+function findFileSignatures(bytes,tail,deep=false){
+  const ceiling=deep?12*1024*1024:2*1024*1024,areas=[[0,Math.min(bytes.length,ceiling)]];if(tail&&tail.offset>areas[0][1])areas.push([tail.offset,bytes.length]);
+  const found=[];for(const sig of FILE_SIGNATURES){let positions=[];for(const [start,end] of areas){let cursor=start,repeat=0;while(cursor<end&&repeat<4){const at=scanIndexOf(bytes,sig.bytes,cursor,end);if(at<0)break;if(!positions.includes(at))positions.push(at);cursor=at+sig.bytes.length;repeat++;}}for(const offset of positions)found.push({name:sig.name,offset,insideTail:tail?offset>=tail.offset:false});}
   return found;
 }
 function scanPixelStats(imageData){
@@ -631,7 +688,7 @@ function buildScanFindings(report,signatures,pixels,probes,imageDecoded){
   return findings;
 }
 function formatMetadata(report){if(!report.metadata.length)return 'لا توجد حقول Metadata نصية أو EXIF قابلة للعرض ضمن المحلل الحالي.';return report.metadata.slice(0,100).map(item=>`[${item.source}]\n${item.key}: ${item.value}`).join('\n\n')+(report.metadata.length>100?`\n\n… تم اختصار ${report.metadata.length-100} حقلاً إضافياً.`:'');}
-function formatContainer(report,signatures){const lines=[];lines.push(`الصيغة: ${report.format}`);if(report.chunks.length){lines.push(`الأقسام (${report.chunks.length}):`);for(const item of report.chunks.slice(0,130))lines.push(`  ${item.offset.toString().padStart(8)}  ${item.type.padEnd(20)} ${formatBytes(item.size)}${item.unknown?'  [غير معروف]':''}${item.private?'  [خاص]':''}`);if(report.chunks.length>130)lines.push(`  … ${report.chunks.length-130} قسم إضافي`);}if(report.tail)lines.push(`\nبيانات لاحقة: ${formatBytes(report.tail.length)} عند offset ${report.tail.offset}`);if(signatures.length)lines.push(`\nالبصمات: ${signatures.map(x=>`${x.name} @${x.offset}${x.insideTail?' (tail)':''}`).join(' · ')}`);if(report.warnings.length)lines.push(`\nملاحظات: ${report.warnings.join(' | ')}`);return lines.join('\n');}
+function formatContainer(report,signatures){const lines=[];lines.push(`الصيغة: ${report.format}`);if(report.chunks.length){lines.push(`الأقسام (${report.chunks.length}):`);for(const item of report.chunks.slice(0,130))lines.push(`  ${item.offset.toString().padStart(8)}  ${item.type.padEnd(20)} ${formatBytes(item.size)}${item.unknown?'  [غير معروف]':''}${item.private?'  [خاص]':''}`);if(report.chunks.length>130)lines.push(`  … ${report.chunks.length-130} قسم إضافي`);}if(report.tail){const tailBytes=state.scan.bytes.slice(report.tail.offset,Math.min(state.scan.bytes.length,report.tail.offset+700));lines.push(`\nبيانات لاحقة: ${formatBytes(report.tail.length)} عند offset ${report.tail.offset}`);lines.push(`معاينة tail: ${scanShort(scanSafeText(tailBytes),500)}`);}if(signatures.length)lines.push(`\nالبصمات: ${signatures.map(x=>`${x.name} @${x.offset}${x.insideTail?' (tail)':''}`).join(' · ')}`);if(report.warnings.length)lines.push(`\nملاحظات: ${report.warnings.join(' | ')}`);return lines.join('\n');}
 function formatPixels(stats,probes,imageDecoded){if(!imageDecoded)return 'تعذر فك ترميز البكسلات في هذا المتصفح، لذلك لم يجر تحليل LSB.';const lines=[`عينة التحليل: ${stats.sampled.toLocaleString('ar')} بكسل${stats.stride>1?` (كل ${stats.stride} بكسل)`:''}.`,`قياس χ²/زوج يصف تقارب الأزواج اللونية، وليس احتمالاً مؤكداً للإخفاء.`,''];for(const c of stats.channels)lines.push(`${c.channel}: LSB=1 ${(c.ones*100).toFixed(3)}% | entropy ${c.entropy.toFixed(5)} bit | χ² ${c.chi.toFixed(1)} | χ²/زوج ${c.chiPerPair.toFixed(3)}`);return lines.join('\n');}
 function formatProbes(probes){return probes.lines.join('\n\n')+'\n\nالنطاق: تُفحص بدايات مسارات RGB وR وG وB حتى 96 ك.ب لكل مسار. لا يشمل ذلك أساليب DCT/JPEG أو البيانات الموزعة بمفتاح مجهول.';}
 function renderScan(report,signatures,stats,probes,imageDecoded){
@@ -650,7 +707,7 @@ async function chooseScan(file){
 attachDrop('scanDrop','scanFile',chooseScan);$('scanReplace').addEventListener('click',()=>$('scanFile').click());$('scanClear').addEventListener('click',()=>{if(state.scan.objectUrl)URL.revokeObjectURL(state.scan.objectUrl);state.scan={image:null,file:null,bytes:null,objectUrl:null};$('scanFile').value='';$('scanImageInfo').classList.add('hidden');$('scanResultCard').classList.add('hidden');$('scanButton').disabled=true;});
 $('scanButton').addEventListener('click',async()=>{
   const button=$('scanButton');if(!state.scan.file||!state.scan.bytes)return;setAlert('scanAlert');$('scanResultCard').classList.add('hidden');
-  try{setWorking(button,true,'يفكك ويحلل…');await new Promise(resolve=>setTimeout(resolve,10));const report=await parseContainer(state.scan.bytes),signatures=findFileSignatures(state.scan.bytes,report.tail);let stats=null,probes={lines:['تعذر فك ترميز البكسلات في المتصفح.'],candidates:[]},decoded=false;if(state.scan.image){const pixels=canvasPixels(state.scan.image).data;stats=scanPixelStats(pixels);probes=probePixelStreams(pixels);decoded=true;}renderScan(report,signatures,stats,probes,decoded);showToast('اكتمل الفحص المحلي.');}
+  try{setWorking(button,true,'يفكك ويحلل…');await new Promise(resolve=>setTimeout(resolve,10));const report=await parseContainer(state.scan.bytes),signatures=$('carveToggle').checked?findFileSignatures(state.scan.bytes,report.tail,true):[];let stats=null,probes={lines:['تعذر فك ترميز البكسلات في المتصفح.'],candidates:[]},decoded=false;if(state.scan.image){const pixels=canvasPixels(state.scan.image).data;stats=scanPixelStats(pixels);probes=probePixelStreams(pixels);decoded=true;if($('deepScanToggle').checked){setWorking(button,true,'يمسح طبقات البتات…');const deep=await deepBitSweep(pixels);probes.lines.push(`— التمشيط العميق: ${deep.checked} تركيباً —`,...deep.lines);probes.candidates.push(...deep.candidates);probes.deep={checked:deep.checked,limited:deep.limited};}}renderScan(report,signatures,stats,probes,decoded);showToast('اكتمل الفحص المحلي.');}
   catch(error){setAlert('scanAlert',error.message||'حدث خطأ أثناء الفحص.');}
   finally{setWorking(button,false);}
 });
